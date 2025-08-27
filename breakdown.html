@@ -187,8 +187,8 @@
                 return { baseFare, nightRate, ratePerKm, distanceSubtotal, waitingSubtotal, surcharges, totalFare };
             };
 
-            const render = () => {
-                const data = getStoredData();
+            // This function now takes data as an argument
+            const render = (data) => {
                 const { baseFare, distanceSubtotal, waitingSubtotal, surcharges, totalFare } = getCalculation(data);
                 displays.baseFare.textContent = currencyFormatter.format(baseFare);
                 displays.distanceDisplay.textContent = (parseFloat(data.distance) || 0).toFixed(1);
@@ -200,14 +200,14 @@
                 displays.totalAmount.textContent = currencyFormatter.format(totalFare);
             };
             
-            printBtn.addEventListener('click', () => {
-                const data = getStoredData();
+            // NEW: Function to populate receipt and trigger print
+            const populateReceiptAndPrint = (data) => {
                 const calculated = getCalculation(data);
                 
                 receiptDisplays.date.textContent = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
                 receiptDisplays.distance.textContent = `${(parseFloat(data.distance) || 0).toFixed(1)} km`;
                 receiptDisplays.time.textContent = data.tripTime;
-                receiptDisplays.rateType.textContent = calculated.nightRate ? `Night Rate (${calculated.ratePerKm} XPF/km)` : `Day Rate (${calculated.ratePerKm} XPF/km)`;
+                receiptDisplays.rateType.textContent = calculated.nightRate ? `Night Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)` : `Day Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)`;
                 receiptDisplays.waiting.textContent = `${data.waitingTime} minutes`;
                 receiptDisplays.baseFare.textContent = currencyFormatter.format(calculated.baseFare);
                 receiptDisplays.distanceCost.textContent = currencyFormatter.format(calculated.distanceSubtotal);
@@ -215,12 +215,61 @@
                 receiptDisplays.surcharges.textContent = currencyFormatter.format(calculated.surcharges);
                 receiptDisplays.total.textContent = currencyFormatter.format(calculated.totalFare);
                 
+                // This will now work because this function is only called in the new tab
                 window.print();
-            });
+            };
 
-            window.addEventListener('storage', render);
-            window.addEventListener('storageUpdated', render);
-            render();
+            // --- MAIN LOGIC ---
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('print') === 'true') {
+                // PRINT MODE: This page was opened in a new tab to be printed.
+                
+                // Hide the main card so only the receipt prints
+                document.querySelector('.calculator-card').style.display = 'none';
+
+                const dataFromUrl = {
+                    distance: urlParams.get('distance'),
+                    tripTime: urlParams.get('tripTime'),
+                    waitingTime: parseInt(urlParams.get('waitingTime'), 10),
+                    passengers: parseInt(urlParams.get('passengers'), 10),
+                    luggage: parseInt(urlParams.get('luggage'), 10),
+                    largeItems: parseInt(urlParams.get('largeItems'), 10),
+                    mountainClimb: urlParams.get('mountainClimb') === 'true'
+                };
+                
+                populateReceiptAndPrint(dataFromUrl);
+
+            } else {
+                // IFRAME MODE: This is the normal view inside your Google Site.
+                
+                // Listen for changes from the other cards
+                window.addEventListener('storage', () => render(getStoredData()));
+                window.addEventListener('storageUpdated', () => render(getStoredData()));
+                
+                // Initial render
+                render(getStoredData());
+
+                // MODIFIED: The print button now opens the new tab
+                printBtn.addEventListener('click', () => {
+                    const data = getStoredData();
+                    
+                    // Convert the data into a string of URL parameters
+                    const params = new URLSearchParams({
+                        distance: data.distance,
+                        tripTime: data.tripTime,
+                        waitingTime: data.waitingTime,
+                        passengers: data.passengers,
+                        luggage: data.luggage,
+                        largeItems: data.largeItems,
+                        mountainClimb: data.mountainClimb,
+                        print: 'true' // The special flag
+                    });
+
+                    // Open the current page in a new tab with the data in the URL
+                    window.open(`${window.location.pathname}?${params.toString()}`, '_blank');
+                });
+            }
         });
     </script>
 </body>
