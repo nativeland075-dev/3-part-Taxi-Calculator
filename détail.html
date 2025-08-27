@@ -216,9 +216,13 @@
                 window.print();
             };
 
+            // --- MAIN LOGIC ---
             const urlParams = new URLSearchParams(window.location.search);
 
             if (urlParams.get('print') === 'true') {
+                // PRINT MODE: This page was opened in a new tab to be printed.
+                
+                // Hide the main card so only the receipt prints
                 document.querySelector('.calculator-card').style.display = 'none';
 
                 const dataFromUrl = {
@@ -234,13 +238,20 @@
                 populateReceiptAndPrint(dataFromUrl);
 
             } else {
+                // IFRAME MODE: This is the normal view inside your Google Site.
+                
+                // Listen for changes from the other cards
                 window.addEventListener('storage', () => render(getStoredData()));
                 window.addEventListener('storageUpdated', () => render(getStoredData()));
+                
+                // Initial render
                 render(getStoredData());
 
+                // MODIFIED: The print button now opens the new tab
                 printBtn.addEventListener('click', () => {
                     const data = getStoredData();
-                    
+           
+                    // Convert the data into a string of URL parameters         
                     const params = new URLSearchParams({
                         distance: data.distance,
                         tripTime: data.tripTime,
@@ -249,11 +260,11 @@
                         luggage: data.luggage,
                         largeItems: data.largeItems,
                         mountainClimb: data.mountainClimb,
-                        print: 'true'
+                        print: 'true' // The special flag
                     });
                     
                     // IMPORTANT: Remember to replace this with your actual GitHub URL
-                    window.open(`https://REPLACE-WITH-YOUR-GITHUB-URL.html?${params.toString()}`, '_blank');
+                    window.open(`https://nativeland075-dev.github.io/3-part-Taxi-Calculator/d%C3%A9tail.html?${params.toString()}`, '_blank');
                 });
             }
         });
