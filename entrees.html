@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS is identical across all cards for consistency */
         :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; }
@@ -44,19 +43,19 @@
         }
         .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
 
-        /* --- STYLES FOR REPOSITIONED SLIDER --- */
         .separator {
             border: none;
             height: 1px;
             background-color: var(--medium-gray);
-            margin: 24px 0;
+            margin: 54px 0;
         }
         .slider-group-repositioned {
-            text-align: center; /* Center all child elements */
+            text-align: center;
+            margin-top: -15px;
         }
         .slider-value-display {
             color: var(--primary-color);
-            font-size: 28px; /* Larger font for the number */
+            font-size: 28px;
             font-weight: 700;
             line-height: 1;
         }
@@ -64,7 +63,7 @@
             color: var(--dark-gray);
             font-size: 13px;
             font-weight: 500;
-            margin-bottom: 16px; /* Space before the slider */
+            margin-bottom: 16px;
         }
         .slider-label-main {
             color: var(--dark-gray);
@@ -77,7 +76,7 @@
         }
         
         .slider-container { 
-            margin-bottom: 12px; /* Space between slider and label */
+            margin-bottom: 12px;
         }
         
         .slider {
@@ -121,7 +120,7 @@
         <form id="calculator-form-part1">
             <div class="input-group">
                 <label class="input-label" for="distance">Distance (km)</label>
-                <input type="number" id="distance" class="input-field" placeholder="Saisir la distance en kilomètres" min="0" max="500" step="0.1">
+                <input type="number" id="distance" class="input-field" placeholder="Entrer la distance" min="0" max="500" step="0.1">
             </div>
             <div class="input-group">
                 <label class="input-label" for="trip-time">Heure de la course</label>
@@ -135,7 +134,7 @@
                 </div>
                 <p class="slider-value-unit">minutes</p>
                 <div class="slider-container">
-                    <input type="range" id="waiting-time" class="slider" min="0" max="300" step="1">
+                    <input type="range" id="waiting-time" class="slider" value="0" min="0" max="300" step="1">
                 </div>
                 <p class="slider-label-main">Temps d'attente</p>
                 <p class="slider-label-sub">(Embouteillages, arrêts, etc.)</p>
@@ -161,7 +160,7 @@
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
-                    distance: 0, tripTime: '12:00', waitingTime: 0,
+                    distance: '', tripTime: '12:00', waitingTime: 0,
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 };
             };
@@ -183,7 +182,7 @@
 
                 const updatedData = {
                     ...currentData,
-                    distance: distanceValue.endsWith('.') ? distanceValue : (parseFloat(distanceValue) || 0),
+                    distance: distanceValue.endsWith('.') ? distanceValue : (parseFloat(distanceValue) || ''),
                     tripTime: elements.tripTime.value,
                     waitingTime: parseInt(elements.waitingTime.value, 10) || 0,
                 };
@@ -220,7 +219,7 @@
 
             if (!localStorage.getItem(STORAGE_KEY)) {
                  saveData({
-                    distance: 0, tripTime: '12:00', waitingTime: 0,
+                    distance: '', tripTime: '12:00', waitingTime: 0,
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 });
             }
