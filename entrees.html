@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* CSS is identical across all cards for consistency */
         :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; }
@@ -16,17 +17,96 @@
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 { color: var(--text-color); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
         .header p { color: var(--subtle-text); font-size: 14px; }
-        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--light-gray); }
-        .input-label { color: var(--dark-gray); font-size: 14px; font-weight: 500; margin: 0; padding-right: 16px; }
-        .input-field { width: 120px; padding: 10px 14px; border: 1px solid var(--medium-gray); border-radius: 12px; font-size: 14px; background: var(--light-gray); transition: all 0.2s ease; }
+        
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .input-label {
+            color: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0;
+            padding-right: 16px;
+        }
+        .input-field { 
+            width: 120px;
+            padding: 10px 14px; 
+            border: 1px solid var(--medium-gray); 
+            border-radius: 12px; 
+            font-size: 14px; 
+            background: var(--light-gray); 
+            transition: all 0.2s ease; 
+        }
         .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
-        .slider-group { margin-top: 16px; }
-        .slider-label { display: block; color: var(--dark-gray); font-size: 13px; font-weight: 500; margin-bottom: 6px; text-align: center; }
-        .slider-container { margin-top: 8px; }
-        .slider { width: 100%; height: 6px; border-radius: 6px; background: #e5e7eb; outline: none; appearance: none; }
-        .slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
-        .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
-        .slider-value { text-align: center; margin-top: 8px; color: var(--primary-color); font-weight: 600; font-size: 14px; }
+
+        /* --- STYLES FOR REPOSITIONED SLIDER --- */
+        .separator {
+            border: none;
+            height: 1px;
+            background-color: var(--medium-gray);
+            margin: 24px 0;
+        }
+        .slider-group-repositioned {
+            text-align: center; /* Center all child elements */
+        }
+        .slider-value-display {
+            color: var(--primary-color);
+            font-size: 28px; /* Larger font for the number */
+            font-weight: 700;
+            line-height: 1;
+        }
+        .slider-value-unit {
+            color: var(--dark-gray);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px; /* Space before the slider */
+        }
+        .slider-label-main {
+            color: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .slider-label-sub {
+            color: var(--subtle-text);
+            font-size: 12px;
+        }
+        
+        .slider-container { 
+            margin-bottom: 12px; /* Space between slider and label */
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 6px;
+            background: #e5e7eb;
+            outline: none;
+            appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3);
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3);
+        }
+
         .rate-indicator { text-align: center; padding: 8px 16px; margin: 16px 0; border-radius: 8px; font-size: 13px; font-weight: 500; }
         .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
         .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
@@ -48,12 +128,17 @@
                 <input type="time" id="trip-time" class="input-field">
             </div>
             <div id="rate-indicator" class="rate-indicator rate-day"></div>
-            <div class="slider-group">
-                <label class="slider-label" for="waiting-time">Temps d'attente (Embouteillages, arrêts, etc.)</label>
+            <hr class="separator">
+            <div class="slider-group-repositioned">
+                <div class="slider-value-display">
+                    <span id="waiting-value">0</span>
+                </div>
+                <p class="slider-value-unit">minutes</p>
                 <div class="slider-container">
                     <input type="range" id="waiting-time" class="slider" min="0" max="300" step="1">
-                    <div class="slider-value"><span id="waiting-value">0</span> minutes</div>
                 </div>
+                <p class="slider-label-main">Temps d'attente</p>
+                <p class="slider-label-sub">(Embouteillages, arrêts, etc.)</p>
             </div>
         </form>
     </div>
@@ -61,6 +146,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
+
             const form = document.getElementById('calculator-form-part1');
             const elements = {
                 distance: document.getElementById('distance'),
@@ -71,6 +157,7 @@
                 rateIndicator: document.getElementById('rate-indicator'),
                 waitingValue: document.getElementById('waiting-value'),
             };
+
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
@@ -78,18 +165,22 @@
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 };
             };
+
             const saveData = (data) => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 window.dispatchEvent(new CustomEvent('storageUpdated'));
             };
+            
             const isNightRate = (timeString) => {
                 if (!timeString) return false;
                 const hour = parseInt(timeString.split(':')[0], 10);
                 return hour >= 20 || hour < 6;
             };
+
             const handleInput = (event) => {
                 const currentData = getStoredData();
                 const distanceValue = elements.distance.value;
+
                 const updatedData = {
                     ...currentData,
                     distance: distanceValue.endsWith('.') ? distanceValue : (parseFloat(distanceValue) || 0),
@@ -98,8 +189,10 @@
                 };
                 saveData(updatedData);
             };
+
             const render = () => {
                 const data = getStoredData();
+                
                 if (document.activeElement !== elements.distance) {
                     elements.distance.value = data.distance;
                 }
@@ -109,7 +202,9 @@
                 if (document.activeElement !== elements.waitingTime) {
                     elements.waitingTime.value = data.waitingTime;
                 }
+
                 displays.waitingValue.textContent = data.waitingTime;
+                
                 if (isNightRate(data.tripTime)) {
                     displays.rateIndicator.className = 'rate-indicator rate-night';
                     displays.rateIndicator.textContent = `Tarif de Nuit : 260 XPF/km (20:00 - 6:00)`;
@@ -118,9 +213,11 @@
                     displays.rateIndicator.textContent = `Tarif de Jour : 160 XPF/km (6:00 - 20:00)`;
                 }
             };
+
             form.addEventListener('input', handleInput);
             window.addEventListener('storage', render);
             window.addEventListener('storageUpdated', render);
+
             if (!localStorage.getItem(STORAGE_KEY)) {
                  saveData({
                     distance: 0, tripTime: '12:00', waitingTime: 0,
