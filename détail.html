@@ -11,7 +11,7 @@
         :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; }
-        body { font-family: 'Inter', sans-serif; background-color: transparent; padding: 16px; display: flex; justify-content: center; }
+        body { font-family: 'Inter', sans-serif; background-color: transparent; padding: 16px; display: flex; justify-content: center; align-items: center; }
         .calculator-card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid var(--medium-gray); padding: 32px; width: 100%; max-width: 400px; display: flex; flex-direction: column; }
         .card-title { color: var(--text-color); font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 32px; }
         .breakdown-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--light-gray); }
@@ -132,132 +132,131 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const STORAGE_KEY = 'taxiFareData';
-        const displays = {
-            baseFare: document.getElementById('base-fare'),
-            distanceDisplay: document.getElementById('distance-display'),
-            distanceSubtotal: document.getElementById('distance-subtotal'),
-            waitingDisplay: document.getElementById('waiting-display'),
-            waitingSubtotal: document.getElementById('waiting-subtotal'),
-            surchargesSubtotal: document.getElementById('surcharges-subtotal'),
-            breakdownTotal: document.getElementById('breakdown-total'),
-            totalAmount: document.getElementById('total-amount'),
-        };
-        const receiptDisplays = {
-            date: document.getElementById('receipt-date'),
-            distance: document.getElementById('receipt-distance'),
-            time: document.getElementById('receipt-time'),
-            rateType: document.getElementById('receipt-rate-type'),
-            waiting: document.getElementById('receipt-waiting'),
-            baseFare: document.getElementById('receipt-base-fare'),
-            distanceCost: document.getElementById('receipt-distance-cost'),
-            waitingCost: document.getElementById('receipt-waiting-cost'),
-            surcharges: document.getElementById('receipt-surcharges'),
-            total: document.getElementById('receipt-total'),
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'taxiFareData';
+            const displays = {
+                baseFare: document.getElementById('base-fare'),
+                distanceDisplay: document.getElementById('distance-display'),
+                distanceSubtotal: document.getElementById('distance-subtotal'),
+                waitingDisplay: document.getElementById('waiting-display'),
+                waitingSubtotal: document.getElementById('waiting-subtotal'),
+                surchargesSubtotal: document.getElementById('surcharges-subtotal'),
+                breakdownTotal: document.getElementById('breakdown-total'),
+                totalAmount: document.getElementById('total-amount'),
+            };
+            const receiptDisplays = {
+                date: document.getElementById('receipt-date'),
+                distance: document.getElementById('receipt-distance'),
+                time: document.getElementById('receipt-time'),
+                rateType: document.getElementById('receipt-rate-type'),
+                waiting: document.getElementById('receipt-waiting'),
+                baseFare: document.getElementById('receipt-base-fare'),
+                distanceCost: document.getElementById('receipt-distance-cost'),
+                waitingCost: document.getElementById('receipt-waiting-cost'),
+                surcharges: document.getElementById('receipt-surcharges'),
+                total: document.getElementById('receipt-total'),
+            };
 
-        const printBtn = document.getElementById('print-btn');
-        const RATES = { baseFare: 1000, dayRatePerKm: 160, nightRatePerKm: 260, waitingRatePerMinute: 2500 / 60, surcharges: { luggage: 100, largeItem: 500, mountainClimb: 500, fifthPassenger: 500 } };
-        const currencyFormatter = new Intl.NumberFormat('fr-PF', { style: 'currency', currency: 'XPF', minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        
-        const getStoredData = () => {
-            const storedData = localStorage.getItem(STORAGE_KEY);
-            return storedData ? JSON.parse(storedData) : { distance: 0, tripTime: '12:00', waitingTime: 0, passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false };
-        };
-        
-        const isNightRate = (timeString) => {
-            if (!timeString) return false;
-            const hour = parseInt(timeString.split(':')[0], 10);
-            return hour >= 20 || hour < 6;
-        };
-
-        const getCalculation = (data) => {
-            const baseFare = RATES.baseFare;
-            const nightRate = isNightRate(data.tripTime);
-            const ratePerKm = nightRate ? RATES.nightRatePerKm : RATES.dayRatePerKm;
-            const distanceSubtotal = (parseFloat(data.distance) || 0) * ratePerKm;
-            const waitingSubtotal = data.waitingTime * RATES.waitingRatePerMinute;
-            let surcharges = 0;
-            surcharges += data.luggage * RATES.surcharges.luggage;
-            surcharges += data.largeItems * RATES.surcharges.largeItem;
-            if (data.mountainClimb) surcharges += RATES.surcharges.mountainClimb;
-            if (data.passengers === 5) surcharges += RATES.surcharges.fifthPassenger;
-            const totalFare = baseFare + distanceSubtotal + waitingSubtotal + surcharges;
-            return { baseFare, nightRate, ratePerKm, distanceSubtotal, waitingSubtotal, surcharges, totalFare };
-        };
-        
-        const render = (data) => {
-            const { baseFare, distanceSubtotal, waitingSubtotal, surcharges, totalFare } = getCalculation(data);
-            displays.baseFare.textContent = currencyFormatter.format(baseFare);
-            displays.distanceDisplay.textContent = (parseFloat(data.distance) || 0).toFixed(1);
-            displays.distanceSubtotal.textContent = currencyFormatter.format(distanceSubtotal);
-            displays.waitingDisplay.textContent = data.waitingTime;
-            displays.waitingSubtotal.textContent = currencyFormatter.format(waitingSubtotal);
-            displays.surchargesSubtotal.textContent = currencyFormatter.format(surcharges);
-            displays.breakdownTotal.textContent = currencyFormatter.format(totalFare);
-            displays.totalAmount.textContent = currencyFormatter.format(totalFare);
-        };
-        
-        const populateReceiptAndPrint = (data) => {
-            const calculated = getCalculation(data);
+            const printBtn = document.getElementById('print-btn');
+            const RATES = { baseFare: 1000, dayRatePerKm: 160, nightRatePerKm: 260, waitingRatePerMinute: 2500 / 60, surcharges: { luggage: 100, largeItem: 500, mountainClimb: 500, fifthPassenger: 500 } };
+            const currencyFormatter = new Intl.NumberFormat('fr-PF', { style: 'currency', currency: 'XPF', minimumFractionDigits: 0, maximumFractionDigits: 0 });
             
-            receiptDisplays.date.textContent = new Date().toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
-            receiptDisplays.distance.textContent = `${(parseFloat(data.distance) || 0).toFixed(1)} km`;
-            receiptDisplays.time.textContent = data.tripTime;
-            receiptDisplays.rateType.textContent = calculated.nightRate ? `Tarif de Nuit (${currencyFormatter.format(calculated.ratePerKm)}/km)` : `Tarif de Jour (${currencyFormatter.format(calculated.ratePerKm)}/km)`;
-            receiptDisplays.waiting.textContent = `${data.waitingTime} minutes`;
-            receiptDisplays.baseFare.textContent = currencyFormatter.format(calculated.baseFare);
-            receiptDisplays.distanceCost.textContent = currencyFormatter.format(calculated.distanceSubtotal);
-            receiptDisplays.waitingCost.textContent = currencyFormatter.format(calculated.waitingSubtotal);
-            receiptDisplays.surcharges.textContent = currencyFormatter.format(calculated.surcharges);
-            receiptDisplays.total.textContent = currencyFormatter.format(calculated.totalFare);
-            
-            window.print();
-        };
-
-        const urlParams = new URLSearchParams(window.location.search);
-
-        if (urlParams.get('print') === 'true') {
-            document.querySelector('.calculator-card').style.display = 'none';
-
-            const dataFromUrl = {
-                distance: urlParams.get('distance'),
-                tripTime: urlParams.get('tripTime'),
-                waitingTime: parseInt(urlParams.get('waitingTime'), 10),
-                passengers: parseInt(urlParams.get('passengers'), 10),
-                luggage: parseInt(urlParams.get('luggage'), 10),
-                largeItems: parseInt(urlParams.get('largeItems'), 10),
-                mountainClimb: urlParams.get('mountainClimb') === 'true'
+            const getStoredData = () => {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : { distance: 0, tripTime: '12:00', waitingTime: 0, passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false };
             };
             
-            populateReceiptAndPrint(dataFromUrl);
+            const isNightRate = (timeString) => {
+                if (!timeString) return false;
+                const hour = parseInt(timeString.split(':')[0], 10);
+                return hour >= 20 || hour < 6;
+            };
 
-        } else {
-            window.addEventListener('storage', () => render(getStoredData()));
-            window.addEventListener('storageUpdated', () => render(getStoredData()));
-            render(getStoredData());
-
-            printBtn.addEventListener('click', () => {
-                const data = getStoredData();
+            const getCalculation = (data) => {
+                const baseFare = RATES.baseFare;
+                const nightRate = isNightRate(data.tripTime);
+                const ratePerKm = nightRate ? RATES.nightRatePerKm : RATES.dayRatePerKm;
+                const distanceSubtotal = (parseFloat(data.distance) || 0) * ratePerKm;
+                const waitingSubtotal = data.waitingTime * RATES.waitingRatePerMinute;
+                let surcharges = 0;
+                surcharges += data.luggage * RATES.surcharges.luggage;
+                surcharges += data.largeItems * RATES.surcharges.largeItem;
+                if (data.mountainClimb) surcharges += RATES.surcharges.mountainClimb;
+                if (data.passengers === 5) surcharges += RATES.surcharges.fifthPassenger;
+                const totalFare = baseFare + distanceSubtotal + waitingSubtotal + surcharges;
+                return { baseFare, nightRate, ratePerKm, distanceSubtotal, waitingSubtotal, surcharges, totalFare };
+            };
+            
+            const render = (data) => {
+                const { baseFare, distanceSubtotal, waitingSubtotal, surcharges, totalFare } = getCalculation(data);
+                displays.baseFare.textContent = currencyFormatter.format(baseFare);
+                displays.distanceDisplay.textContent = (parseFloat(data.distance) || 0).toFixed(1);
+                displays.distanceSubtotal.textContent = currencyFormatter.format(distanceSubtotal);
+                displays.waitingDisplay.textContent = data.waitingTime;
+                displays.waitingSubtotal.textContent = currencyFormatter.format(waitingSubtotal);
+                displays.surchargesSubtotal.textContent = currencyFormatter.format(surcharges);
+                displays.breakdownTotal.textContent = currencyFormatter.format(totalFare);
+                displays.totalAmount.textContent = currencyFormatter.format(totalFare);
+            };
+            
+            const populateReceiptAndPrint = (data) => {
+                const calculated = getCalculation(data);
                 
-                const params = new URLSearchParams({
-                    distance: data.distance,
-                    tripTime: data.tripTime,
-                    waitingTime: data.waitingTime,
-                    passengers: data.passengers,
-                    luggage: data.luggage,
-                    largeItems: data.largeItems,
-                    mountainClimb: data.mountainClimb,
-                    print: 'true'
+                receiptDisplays.date.textContent = new Date().toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+                receiptDisplays.distance.textContent = `${(parseFloat(data.distance) || 0).toFixed(1)} km`;
+                receiptDisplays.time.textContent = data.tripTime;
+                receiptDisplays.rateType.textContent = calculated.nightRate ? `Tarif de Nuit (${currencyFormatter.format(calculated.ratePerKm)}/km)` : `Tarif de Jour (${currencyFormatter.format(calculated.ratePerKm)}/km)`;
+                receiptDisplays.waiting.textContent = `${data.waitingTime} minutes`;
+                receiptDisplays.baseFare.textContent = currencyFormatter.format(calculated.baseFare);
+                receiptDisplays.distanceCost.textContent = currencyFormatter.format(calculated.distanceSubtotal);
+                receiptDisplays.waitingCost.textContent = currencyFormatter.format(calculated.waitingSubtotal);
+                receiptDisplays.surcharges.textContent = currencyFormatter.format(calculated.surcharges);
+                receiptDisplays.total.textContent = currencyFormatter.format(calculated.totalFare);
+                
+                window.print();
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('print') === 'true') {
+                document.querySelector('.calculator-card').style.display = 'none';
+
+                const dataFromUrl = {
+                    distance: urlParams.get('distance'),
+                    tripTime: urlParams.get('tripTime'),
+                    waitingTime: parseInt(urlParams.get('waitingTime'), 10),
+                    passengers: parseInt(urlParams.get('passengers'), 10),
+                    luggage: parseInt(urlParams.get('luggage'), 10),
+                    largeItems: parseInt(url_params.get('largeItems'), 10),
+                    mountainClimb: urlParams.get('mountainClimb') === 'true'
+                };
+                
+                populateReceiptAndPrint(dataFromUrl);
+
+            } else {
+                window.addEventListener('storage', () => render(getStoredData()));
+                window.addEventListener('storageUpdated', () => render(getStoredData()));
+                render(getStoredData());
+
+                printBtn.addEventListener('click', () => {
+                    const data = getStoredData();
+                    
+                    const params = new URLSearchParams({
+                        distance: data.distance,
+                        tripTime: data.tripTime,
+                        waitingTime: data.waitingTime,
+                        passengers: data.passengers,
+                        luggage: data.luggage,
+                        largeItems: data.largeItems,
+                        mountainClimb: data.mountainClimb,
+                        print: 'true'
+                    });
+                    
+                    // IMPORTANT: Remember to replace this with your actual GitHub URL
+                    window.open(`https://REPLACE-WITH-YOUR-GITHUB-URL.html?${params.toString()}`, '_blank');
                 });
-                
-                // --- THIS IS THE CORRECTED LINE ---
-                window.open(`https://nativeland075-dev.github.io/3-part-Taxi-Calculator/détail.html?${params.toString()}`, '_blank');
-            });
-        }
-    });
-</script>
+            }
+        });
+    </script>
 </body>
-</html>
-
+</html>```
