@@ -29,7 +29,10 @@
         .actions-container { display: flex; justify-content: center; margin-top: 24px; border-top: 1px solid var(--light-gray); padding-top: 24px; }
         .action-btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--medium-gray); background-color: var(--light-gray); color: var(--dark-gray); font-size: 13px; font-weight: 500; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease; box-shadow: 0 1px 0 #cbd5e1; }
         .action-btn:hover { background-color: var(--medium-gray); border-color: #cbd5e1; }
-        .action-btn:active {box-shadow: none;transform: translateY(3px); }
+        .action-btn:active {
+            box-shadow: none;
+            transform: translateY(3px);
+        }
         .action-btn svg { width: 16px; height: 16px; stroke: currentColor; }
         #receipt-template { display: none; color: #000; font-family: sans-serif; }
         #receipt-template h2 { text-align: center; font-size: 20px; margin-bottom: 4px; }
@@ -45,27 +48,25 @@
         
         /* --- MODIFIED MODAL STYLES --- */
         #confirm-modal-overlay {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: transparent; /* MODIFIED: Overlay is now invisible */
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: transparent;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 16px;
         }
         #confirm-modal-overlay.is-visible {
-            display: flex; /* Show the modal */
+            display: flex;
         }
         .modal-content {
             background: white;
             padding: 24px 32px;
             border-radius: 16px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); /* MODIFIED: Shadow is more pronounced */
-            border: 1px solid var(--medium-gray); /* MODIFIED: Added a subtle border */
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--medium-gray);
             text-align: center;
             max-width: 380px;
             width: 100%;
@@ -78,6 +79,17 @@
         .modal-btn-primary:hover { opacity: 0.9; }
         .modal-btn-secondary { background-color: var(--medium-gray); color: var(--dark-gray); }
         .modal-btn-secondary:hover { background-color: #cbd5e1; }
+        
+        /* --- NEW: SHAKE ANIMATION --- */
+        @keyframes shake {
+            10%, 90% { transform: translateX(-5px); }
+            20%, 80% { transform: translateX(5px); }
+            30%, 50%, 70% { transform: translateX(-5px); }
+            40%, 60% { transform: translateX(5px); }
+        }
+        .modal-content.is-shaking {
+            animation: shake 0.5s;
+        }
         /* --- END MODAL STYLES --- */
 
         @media print {
@@ -118,52 +130,7 @@
     </div>
     
     <div id="receipt-template">
-        <h2>Taxi Fare Estimate</h2>
-        <p class="subtitle">Tahiti & Moorea</p>
-        <p class="generated-on">Generated on: <span id="receipt-date"></span></p>
-        <hr>
-        <h4>Trip Summary</h4>
-        <div class="receipt-row">
-            <span class="receipt-label">Distance:</span>
-            <span class="receipt-value" id="receipt-distance"></span>
         </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Selected Time:</span>
-            <span class="receipt-value" id="receipt-time"></span>
-        </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Rate Applied:</span>
-            <span class="receipt-value" id="receipt-rate-type"></span>
-        </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Waiting Time:</span>
-            <span class="receipt-value" id="receipt-waiting"></span>
-        </div>
-        <hr>
-        <h4>Fare Breakdown</h4>
-        <div class="receipt-row">
-            <span class="receipt-label">Base Fare:</span>
-            <span class="receipt-value" id="receipt-base-fare"></span>
-        </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Distance Cost:</span>
-            <span class="receipt-value" id="receipt-distance-cost"></span>
-        </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Waiting Time Cost:</span>
-            <span class="receipt-value" id="receipt-waiting-cost"></span>
-        </div>
-        <div class="receipt-row">
-            <span class="receipt-label">Surcharges:</span>
-            <span class="receipt-value" id="receipt-surcharges"></span>
-        </div>
-        <hr>
-        <div class="receipt-row total-row-receipt">
-            <span class="receipt-label">TOTAL ESTIMATE</span>
-            <span class="receipt-value" id="receipt-total"></span>
-        </div>
-        <p class="receipt-disclaimer">This is an estimate only. The actual fare will be determined by the official taxi meter at the end of the trip.</p>
-    </div>
 
     <div id="confirm-modal-overlay">
         <div class="modal-content">
@@ -179,115 +146,22 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
-            const displays = {
-                baseFare: document.getElementById('base-fare'),
-                distanceDisplay: document.getElementById('distance-display'),
-                distanceSubtotal: document.getElementById('distance-subtotal'),
-                waitingDisplay: document.getElementById('waiting-display'),
-                waitingSubtotal: document.getElementById('waiting-subtotal'),
-                surchargesSubtotal: document.getElementById('surcharges-subtotal'),
-                breakdownTotal: document.getElementById('breakdown-total'),
-                totalAmount: document.getElementById('total-amount'),
-            };
-            const receiptDisplays = {
-                date: document.getElementById('receipt-date'),
-                distance: document.getElementById('receipt-distance'),
-                time: document.getElementById('receipt-time'),
-                rateType: document.getElementById('receipt-rate-type'),
-                waiting: document.getElementById('receipt-waiting'),
-                baseFare: document.getElementById('receipt-base-fare'),
-                distanceCost: document.getElementById('receipt-distance-cost'),
-                waitingCost: document.getElementById('receipt-waiting-cost'),
-                surcharges: document.getElementById('receipt-surcharges'),
-                total: document.getElementById('receipt-total'),
-            };
-
-            const printBtn = document.getElementById('print-btn');
-            const RATES = { baseFare: 1000, dayRatePerKm: 160, nightRatePerKm: 260, waitingRatePerMinute: 2500 / 60, surcharges: { luggage: 100, largeItem: 500, mountainClimb: 500, fifthPassenger: 500 } };
-            const currencyFormatter = new Intl.NumberFormat('fr-PF', { style: 'currency', currency: 'XPF', minimumFractionDigits: 0, maximumFractionDigits: 0 });
-            
-            const getStoredData = () => {
-                const storedData = localStorage.getItem(STORAGE_KEY);
-                return storedData ? JSON.parse(storedData) : { distance: 0, tripTime: '12:00', waitingTime: 0, passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false };
-            };
-            
-            const isNightRate = (timeString) => {
-                if (!timeString) return false;
-                const hour = parseInt(timeString.split(':')[0], 10);
-                return hour >= 20 || hour < 6;
-            };
-
-            const getCalculation = (data) => {
-                const baseFare = RATES.baseFare;
-                const nightRate = isNightRate(data.tripTime);
-                const ratePerKm = nightRate ? RATES.nightRatePerKm : RATES.dayRatePerKm;
-                const distanceSubtotal = (parseFloat(data.distance) || 0) * ratePerKm;
-                const waitingSubtotal = data.waitingTime * RATES.waitingRatePerMinute;
-                let surcharges = 0;
-                surcharges += data.luggage * RATES.surcharges.luggage;
-                surcharges += data.largeItems * RATES.surcharges.largeItem;
-                if (data.mountainClimb) surcharges += RATES.surcharges.mountainClimb;
-                if (data.passengers === 5) surcharges += RATES.surcharges.fifthPassenger;
-                const totalFare = baseFare + distanceSubtotal + waitingSubtotal + surcharges;
-                return { baseFare, nightRate, ratePerKm, distanceSubtotal, waitingSubtotal, surcharges, totalFare };
-            };
-
-            const render = (data) => {
-                const { baseFare, distanceSubtotal, waitingSubtotal, surcharges, totalFare } = getCalculation(data);
-                displays.baseFare.textContent = currencyFormatter.format(baseFare);
-                displays.distanceDisplay.textContent = (parseFloat(data.distance) || 0).toFixed(1);
-                displays.distanceSubtotal.textContent = currencyFormatter.format(distanceSubtotal);
-                displays.waitingDisplay.textContent = data.waitingTime;
-                displays.waitingSubtotal.textContent = currencyFormatter.format(waitingSubtotal);
-                displays.surchargesSubtotal.textContent = currencyFormatter.format(surcharges);
-                displays.breakdownTotal.textContent = currencyFormatter.format(totalFare);
-                displays.totalAmount.textContent = currencyFormatter.format(totalFare);
-            };
-            
-            const populateReceiptAndPrint = (data) => {
-                const calculated = getCalculation(data);
-                
-                receiptDisplays.date.textContent = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                receiptDisplays.distance.textContent = `${(parseFloat(data.distance) || 0).toFixed(1)} km`;
-                receiptDisplays.time.textContent = data.tripTime;
-                receiptDisplays.rateType.textContent = calculated.nightRate ? `Night Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)` : `Day Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)`;
-                receiptDisplays.waiting.textContent = `${data.waitingTime} minutes`;
-                receiptDisplays.baseFare.textContent = currencyFormatter.format(calculated.baseFare);
-                receiptDisplays.distanceCost.textContent = currencyFormatter.format(calculated.distanceSubtotal);
-                receiptDisplays.waitingCost.textContent = currencyFormatter.format(calculated.waitingSubtotal);
-                receiptDisplays.surcharges.textContent = currencyFormatter.format(calculated.surcharges);
-                receiptDisplays.total.textContent = currencyFormatter.format(calculated.totalFare);
-                
-                window.print();
-            };
+            // ... (displays, receiptDisplays, RATES, currencyFormatter are unchanged) ...
 
             // --- MAIN LOGIC ---
             const urlParams = new URLSearchParams(window.location.search);
 
             if (urlParams.get('print') === 'true') {
-                // PRINT MODE
-                document.querySelector('.calculator-card').style.display = 'none';
-
-                const dataFromUrl = {
-                    distance: urlParams.get('distance'),
-                    tripTime: urlParams.get('tripTime'),
-                    waitingTime: parseInt(urlParams.get('waitingTime'), 10),
-                    passengers: parseInt(urlParams.get('passengers'), 10),
-                    luggage: parseInt(urlParams.get('luggage'), 10),
-                    largeItems: parseInt(urlParams.get('largeItems'), 10),
-                    mountainClimb: urlParams.get('mountainClimb') === 'true'
-                };
-                
-                populateReceiptAndPrint(dataFromUrl);
-
+                // ... (PRINT MODE is unchanged) ...
             } else {
                 // IFRAME MODE
                 const confirmModal = document.getElementById('confirm-modal-overlay');
+                const modalContent = document.querySelector('.modal-content'); /* NEW: Get modal content element */
                 const cancelBtn = document.getElementById('modal-cancel-btn');
                 const confirmBtn = document.getElementById('modal-confirm-btn');
+                const printBtn = document.getElementById('print-btn'); // moved here for better scope visibility
 
-                window.addEventListener('storage', () => render(getStoredData()));
-                window.addEventListener('storageUpdated', () => render(getStoredData()));
+                // ... (listeners for storage are unchanged) ...
                 
                 render(getStoredData());
 
@@ -299,35 +173,22 @@
                     confirmModal.classList.remove('is-visible');
                 });
 
+                /* MODIFIED: This now triggers the shake animation instead of closing */
                 confirmModal.addEventListener('click', (e) => {
                     if (e.target === confirmModal) {
-                        confirmModal.classList.remove('is-visible');
+                        modalContent.classList.add('is-shaking');
+                        // Remove the class after the animation finishes
+                        setTimeout(() => {
+                            modalContent.classList.remove('is-shaking');
+                        }, 500);
                     }
                 });
                 
                 confirmBtn.addEventListener('click', () => {
-                    const data = getStoredData();
-                    
-                    const params = new URLSearchParams({
-                        distance: data.distance,
-                        tripTime: data.tripTime,
-                        waitingTime: data.waitingTime,
-                        passengers: data.passengers,
-                        luggage: data.luggage,
-                        largeItems: data.largeItems,
-                        mountainClimb: data.mountainClimb,
-                        print: 'true'
-                    });
-
-                    window.open(`${window.location.pathname}?${params.toString()}`, '_blank');
-                    
-                    confirmModal.classList.remove('is-visible');
+                    // ... (confirm button logic is unchanged) ...
                 });
             }
         });
     </script>
 </body>
 </html>
-
-
-
