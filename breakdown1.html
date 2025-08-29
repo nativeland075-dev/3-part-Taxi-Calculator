@@ -42,7 +42,7 @@
         #receipt-template .total-row-receipt .receipt-label, #receipt-template .total-row-receipt .receipt-value { font-size: 18px; font-weight: 700; }
         #receipt-template .receipt-disclaimer { margin-top: 24px; font-size: 10px; color: #555; text-align: center; font-style: italic; }
         
-        /* --- NEW MODAL STYLES --- */
+        /* --- MODIFIED MODAL STYLES --- */
         #confirm-modal-overlay {
             display: none; /* Hidden by default */
             position: fixed;
@@ -50,7 +50,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(30, 41, 59, 0.5); /* using text-color with alpha */
+            background-color: transparent; /* MODIFIED: Overlay is now invisible */
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -63,7 +63,8 @@
             background: white;
             padding: 24px 32px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); /* MODIFIED: Shadow is more pronounced */
+            border: 1px solid var(--medium-gray); /* MODIFIED: Added a subtle border */
             text-align: center;
             max-width: 380px;
             width: 100%;
@@ -263,7 +264,7 @@
             const urlParams = new URLSearchParams(window.location.search);
 
             if (urlParams.get('print') === 'true') {
-                // PRINT MODE: This page was opened in a new tab to be printed.
+                // PRINT MODE
                 document.querySelector('.calculator-card').style.display = 'none';
 
                 const dataFromUrl = {
@@ -279,38 +280,30 @@
                 populateReceiptAndPrint(dataFromUrl);
 
             } else {
-                // IFRAME MODE: This is the normal view inside your Google Site.
-                
-                // NEW: Get modal elements
+                // IFRAME MODE
                 const confirmModal = document.getElementById('confirm-modal-overlay');
                 const cancelBtn = document.getElementById('modal-cancel-btn');
                 const confirmBtn = document.getElementById('modal-confirm-btn');
 
-                // Listen for changes from the other cards
                 window.addEventListener('storage', () => render(getStoredData()));
                 window.addEventListener('storageUpdated', () => render(getStoredData()));
                 
-                // Initial render
                 render(getStoredData());
 
-                // MODIFIED: The print button now ONLY shows the modal
                 printBtn.addEventListener('click', () => {
                     confirmModal.classList.add('is-visible');
                 });
                 
-                // NEW: Hide modal on cancel
                 cancelBtn.addEventListener('click', () => {
                     confirmModal.classList.remove('is-visible');
                 });
 
-                // NEW: Hide modal when clicking the background overlay
                 confirmModal.addEventListener('click', (e) => {
                     if (e.target === confirmModal) {
                         confirmModal.classList.remove('is-visible');
                     }
                 });
                 
-                // NEW: The confirm button now contains the original print logic
                 confirmBtn.addEventListener('click', () => {
                     const data = getStoredData();
                     
