@@ -154,6 +154,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
+            // The server URL will be replaced with a real one when we deploy.
+            const API_BASE_URL = 'http://localhost:3000'; 
 
             const elements = {
                 distance: document.getElementById('distance'),
@@ -166,8 +168,6 @@
                 waitingValue: document.getElementById('waiting-value'),
                 form: document.getElementById('calculator-form-part1'),
             };
-            
-            const MOCK_AVAILABLE_TIMES = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"];
 
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
@@ -208,7 +208,7 @@
                 if (data.tripDate) {
                     elements.tripDateInput.value = data.tripDate;
                     elements.timeSlotsContainer.classList.add('is-visible');
-                    populateTimeSlots(data.tripTime);
+                    // We don't populate slots here anymore, fetchAvailableTimes does that.
                 } else {
                     elements.tripDateInput.value = '';
                     elements.timeSlotsContainer.classList.remove('is-visible');
@@ -228,11 +228,19 @@
                 } else {
                     elements.rateIndicator.style.display = 'none';
                 }
+                 // We need to re-populate time slots on every render to show the selected state
+                if(data.tripDate) {
+                    populateTimeSlots(window.availableTimes || [], data.tripTime);
+                }
             };
 
-            const populateTimeSlots = (selectedTime) => {
+            const populateTimeSlots = (times, selectedTime) => {
                 elements.timeSlotsGrid.innerHTML = '';
-                MOCK_AVAILABLE_TIMES.forEach(time => {
+                 if (times.length === 0) {
+                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: var(--subtle-text); grid-column: 1 / -1; text-align: center;">Fetching times...</p>';
+                    return;
+                }
+                times.forEach(time => {
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'time-slot-btn';
@@ -249,28 +257,42 @@
                 });
             };
 
-            elements.form.addEventListener('input', handleInput);
-            window.addEventListener('storage', render);
-            window.addEventListener('storageUpdated', render);
-
-            // This function handles the logic for when a date is selected, either by flatpickr or mobile native picker.
+            const fetchAvailableTimes = async (dateStr) => {
+                // Show a loading state
+                populateTimeSlots([], null); 
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/available-times?date=${encodeURIComponent(dateStr)}`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    window.availableTimes = data.times; // Store times globally for re-renders
+                    populateTimeSlots(data.times, getStoredData().tripTime);
+                } catch (error) {
+                    console.error('Failed to fetch available times:', error);
+                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: #b91c1c; grid-column: 1 / -1; text-align: center;">Could not load times. Please try again.</p>';
+                }
+            };
+            
             const handleDateSelection = (dateStr) => {
                  if (dateStr && dateStr !== getStoredData().tripDate) {
                     const currentData = getStoredData();
                     const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
                     saveData(updatedData);
+                    fetchAvailableTimes(dateStr); // Fetch times for the new date
                 }
             };
             
-            // Listener for mobile's native date picker
+            elements.form.addEventListener('input', handleInput);
+            window.addEventListener('storage', render);
+            window.addEventListener('storageUpdated', render);
+
             elements.tripDateInput.addEventListener('change', (e) => handleDateSelection(e.target.value));
 
-            // Initialize flatpickr for desktop
             flatpickr(elements.tripDateInput, {
                 dateFormat: "M j, Y",
                 minDate: "today",
                 onClose: function(selectedDates, dateStr, instance) {
-                    // This will be triggered on desktop when the calendar closes.
                     handleDateSelection(dateStr);
                 }
             });
