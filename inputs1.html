@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Stylesheet for the calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,7 +53,7 @@
         }
         .slider-group-repositioned {
             text-align: center;
-            margin-top: -15px; /* Added px unit */
+            margin-top: -15px;
         }
         .slider-value-display {
             color: var(--primary-color);
@@ -109,6 +111,8 @@
         .rate-indicator { text-align: center; padding: 8px 16px; margin: 16px 0; border-radius: 8px; font-size: 13px; font-weight: 500; }
         .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
         .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
+
+        /* --- CSS FOR DATE BUTTON --- */
         .date-button {
             width: 120px;
             padding: 10px 14px;
@@ -156,15 +160,18 @@
                 <label class="input-label" for="trip-time">Trip Time</label>
                 <input type="time" id="trip-time" class="input-field">
             </div>
+
+            <!-- --- HTML FOR DATE BUTTON --- -->
             <div class="input-group">
                 <label class="input-label" for="trip-date-btn">Trip Date</label>
                 <button type="button" id="trip-date-btn" class="date-button">
                     <span>Choose a date</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <svg xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M12 12.75h.008v.008H12v-.008Z" />
                     </svg>
                 </button>
             </div>
+
             <div id="rate-indicator" class="rate-indicator rate-day"></div>
             <hr class="separator">
             <div class="slider-group-repositioned">
@@ -181,6 +188,10 @@
         </form>
     </div>
 
+    <!-- JavaScript for the calendar -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <!-- Main JavaScript for the card -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
@@ -190,6 +201,7 @@
                 distance: document.getElementById('distance'),
                 tripTime: document.getElementById('trip-time'),
                 waitingTime: document.getElementById('waiting-time'),
+                tripDateBtn: document.getElementById('trip-date-btn'),
             };
             const displays = {
                 rateIndicator: document.getElementById('rate-indicator'),
@@ -199,8 +211,14 @@
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
-                    distance: '', tripTime: '12:00', waitingTime: 0,
-                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
+                    distance: '', 
+                    tripTime: '12:00', 
+                    tripDate: null,
+                    waitingTime: 0,
+                    passengers: 1, 
+                    luggage: 0, 
+                    largeItems: 0, 
+                    mountainClimb: false
                 };
             };
 
@@ -240,6 +258,11 @@
                 if (document.activeElement !== elements.waitingTime) {
                     elements.waitingTime.value = data.waitingTime;
                 }
+                
+                if (data.tripDate) {
+                    elements.tripDateBtn.querySelector('span').textContent = data.tripDate;
+                    elements.tripDateBtn.classList.add('has-value');
+                }
 
                 displays.waitingValue.textContent = data.waitingTime;
                 
@@ -256,10 +279,27 @@
             window.addEventListener('storage', render);
             window.addEventListener('storageUpdated', render);
 
+            // --- Initialize the flatpickr calendar ---
+            flatpickr(elements.tripDateBtn, {
+                dateFormat: "M j, Y",
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    const currentData = getStoredData();
+                    const updatedData = { ...currentData, tripDate: dateStr };
+                    saveData(updatedData);
+                }
+            });
+
             if (!localStorage.getItem(STORAGE_KEY)) {
                  saveData({
-                    distance: '', tripTime: '12:00', waitingTime: 0,
-                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
+                    distance: '', 
+                    tripTime: '12:00',
+                    tripDate: null,
+                    waitingTime: 0,
+                    passengers: 1, 
+                    luggage: 0, 
+                    largeItems: 0, 
+                    mountainClimb: false
                 });
             }
             render();
@@ -267,4 +307,6 @@
     </script>
 </body>
 </html>
+
+
 
