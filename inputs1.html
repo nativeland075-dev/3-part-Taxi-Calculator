@@ -43,22 +43,56 @@
             transition: all 0.2s ease; 
             text-align: right;
             color: var(--text-color);
+            font-family: 'Inter', sans-serif;
         }
         .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
         .input-field::placeholder { color: var(--subtle-text); }
-        /* Style for our readonly date input to make it look like a button */
         #trip-date-input {
             cursor: pointer;
             text-align: center;
         }
 
-        .separator {
-            border: none;
-            height: 1px;
-            background-color: var(--medium-gray);
-            margin: 54px 0;
+        /* --- NEW CSS FOR TIME SLOTS --- */
+        #time-slots-container {
+            display: none; /* Hidden by default */
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--light-gray);
         }
-        .slider-group-repositioned { text-align: center; margin-top: -15px; }
+        #time-slots-container.is-visible {
+            display: block;
+        }
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        .time-slot-btn {
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 10px;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .time-slot-btn:hover {
+            background-color: var(--medium-gray);
+            border-color: #cbd5e1;
+        }
+        .time-slot-btn.is-selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+        /* --- END OF NEW CSS --- */
+
+        .separator { border: none; height: 1px; background-color: var(--medium-gray); margin: 24px 0; }
+        .slider-group-repositioned { text-align: center; margin-top: 0; }
         .slider-value-display { color: var(--primary-color); font-size: 28px; font-weight: 700; line-height: 1; }
         .slider-value-unit { color: var(--dark-gray); font-size: 13px; font-weight: 500; margin-bottom: 16px; }
         .slider-label-main { color: var(--dark-gray); font-size: 14px; font-weight: 500; }
@@ -68,7 +102,7 @@
         .slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
         .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
 
-        .rate-indicator { text-align: center; padding: 8px 16px; margin: 16px 0; border-radius: 8px; font-size: 13px; font-weight: 500; }
+        .rate-indicator { text-align: center; padding: 8px 16px; margin-top: 16px; border-radius: 8px; font-size: 13px; font-weight: 500; }
         .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
         .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
     </style>
@@ -85,16 +119,23 @@
                 <input type="number" id="distance" class="input-field" placeholder="Enter distance" min="0" max="500" step="0.1">
             </div>
             <div class="input-group">
-                <label class="input-label" for="trip-time">Trip Time</label>
-                <input type="time" id="trip-time" class="input-field">
-            </div>
-
-            <!-- *** HTML FIX: Replaced button with a readonly input field *** -->
-            <div class="input-group">
                 <label class="input-label" for="trip-date-input">Trip Date</label>
                 <input type="text" id="trip-date-input" class="input-field" placeholder="Choose a date" readonly>
             </div>
 
+            <!-- --- NEW HTML FOR TIME SLOTS --- -->
+            <div id="time-slots-container">
+                 <label class="input-label" style="margin-bottom: 12px; display: block;">Available Times</label>
+                 <div class="time-slots-grid" id="time-slots-grid">
+                     <!-- Time slot buttons will be inserted here by JavaScript -->
+                 </div>
+            </div>
+            
+            <div class="input-group" style="border-bottom: none; padding-bottom: 0;">
+                <label class="input-label" for="trip-time">Trip Time</label>
+                <input type="time" id="trip-time" class="input-field">
+            </div>
+            
             <div id="rate-indicator" class="rate-indicator rate-day"></div>
             <hr class="separator">
             <div class="slider-group-repositioned">
@@ -116,18 +157,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
 
-            const form = document.getElementById('calculator-form-part1');
             const elements = {
                 distance: document.getElementById('distance'),
                 tripTime: document.getElementById('trip-time'),
                 waitingTime: document.getElementById('waiting-time'),
-                // *** JS FIX: Reference the new input element ***
                 tripDateInput: document.getElementById('trip-date-input'),
-            };
-            const displays = {
+                timeSlotsContainer: document.getElementById('time-slots-container'),
+                timeSlotsGrid: document.getElementById('time-slots-grid'),
                 rateIndicator: document.getElementById('rate-indicator'),
                 waitingValue: document.getElementById('waiting-value'),
+                form: document.getElementById('calculator-form-part1'),
             };
+            
+            // Mock data for available time slots. We'll replace this later.
+            const MOCK_AVAILABLE_TIMES = ["08:00", "09:30", "11:00", "14:00", "15:30", "17:00"];
 
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
@@ -150,11 +193,9 @@
 
             const handleInput = (event) => {
                 const currentData = getStoredData();
-                const distanceValue = elements.distance.value;
-
                 const updatedData = {
                     ...currentData,
-                    distance: distanceValue.endsWith('.') ? distanceValue : (parseFloat(distanceValue) || ''),
+                    distance: parseFloat(elements.distance.value) || '',
                     tripTime: elements.tripTime.value,
                     waitingTime: parseInt(elements.waitingTime.value, 10) || 0,
                 };
@@ -168,37 +209,57 @@
                 if (document.activeElement !== elements.tripTime) { elements.tripTime.value = data.tripTime; }
                 if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
                 
-                // *** JS FIX: Set the value of the input field, not a span ***
                 if (data.tripDate) {
                     elements.tripDateInput.value = data.tripDate;
+                    elements.timeSlotsContainer.classList.add('is-visible');
+                    populateTimeSlots(data.tripTime);
                 } else {
-                    elements.tripDateInput.value = ''; // Clear it if no date is stored
+                    elements.tripDateInput.value = '';
+                    elements.timeSlotsContainer.classList.remove('is-visible');
                 }
-
-                displays.waitingValue.textContent = data.waitingTime;
+                
+                elements.waitingValue.textContent = data.waitingTime;
                 
                 if (isNightRate(data.tripTime)) {
-                    displays.rateIndicator.className = 'rate-indicator rate-day';
-                    displays.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
+                    elements.rateIndicator.className = 'rate-indicator rate-night';
+                    elements.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
                 } else {
-                    displays.rateIndicator.className = 'rate-indicator rate-day';
-                    displays.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
+                    elements.rateIndicator.className = 'rate-indicator rate-day';
+                    elements.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
                 }
             };
 
-            form.addEventListener('input', handleInput);
+            const populateTimeSlots = (selectedTime) => {
+                elements.timeSlotsGrid.innerHTML = ''; // Clear existing slots
+                MOCK_AVAILABLE_TIMES.forEach(time => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'time-slot-btn';
+                    button.textContent = time;
+                    if (time === selectedTime) {
+                        button.classList.add('is-selected');
+                    }
+                    button.addEventListener('click', () => {
+                        const currentData = getStoredData();
+                        const updatedData = { ...currentData, tripTime: time };
+                        saveData(updatedData);
+                    });
+                    elements.timeSlotsGrid.appendChild(button);
+                });
+            };
+
+            elements.form.addEventListener('input', handleInput);
             window.addEventListener('storage', render);
             window.addEventListener('storageUpdated', render);
 
-            // *** Initialize flatpickr on the INPUT element ***
             flatpickr(elements.tripDateInput, {
                 dateFormat: "M j, Y",
                 minDate: "today",
                 onClose: function(selectedDates, dateStr, instance) {
-                    // This now fires only after the user has finished their selection
                     if (dateStr) {
                        const currentData = getStoredData();
-                       const updatedData = { ...currentData, tripDate: dateStr };
+                       // When a new date is picked, clear the previously selected time
+                       const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
                        saveData(updatedData);
                     }
                 }
