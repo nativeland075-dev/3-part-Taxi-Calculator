@@ -52,7 +52,6 @@
             text-align: center;
         }
 
-        /* --- NEW CSS FOR TIME SLOTS --- */
         #time-slots-container {
             display: none; /* Hidden by default */
             margin-top: 16px;
@@ -89,7 +88,6 @@
             border-color: var(--primary-color);
             font-weight: 600;
         }
-        /* --- END OF NEW CSS --- */
 
         .separator { border: none; height: 1px; background-color: var(--medium-gray); margin: 24px 0; }
         .slider-group-repositioned { text-align: center; margin-top: 0; }
@@ -123,7 +121,6 @@
                 <input type="text" id="trip-date-input" class="input-field" placeholder="Choose a date" readonly>
             </div>
 
-            <!-- --- NEW HTML FOR TIME SLOTS --- -->
             <div id="time-slots-container">
                  <label class="input-label" style="margin-bottom: 12px; display: block;">Available Times</label>
                  <div class="time-slots-grid" id="time-slots-grid">
@@ -170,7 +167,6 @@
                 form: document.getElementById('calculator-form-part1'),
             };
             
-            // Mock data for available time slots. We'll replace this later with a call to our back-end.
             const MOCK_AVAILABLE_TIMES = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"];
 
             const getStoredData = () => {
@@ -206,7 +202,7 @@
                 const data = getStoredData();
                 
                 if (document.activeElement !== elements.distance) { elements.distance.value = data.distance; }
-                elements.tripTime.value = data.tripTime; // Keep hidden input in sync
+                elements.tripTime.value = data.tripTime;
                 if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
                 
                 if (data.tripDate) {
@@ -235,7 +231,7 @@
             };
 
             const populateTimeSlots = (selectedTime) => {
-                elements.timeSlotsGrid.innerHTML = ''; // Clear existing slots
+                elements.timeSlotsGrid.innerHTML = '';
                 MOCK_AVAILABLE_TIMES.forEach(time => {
                     const button = document.createElement('button');
                     button.type = 'button';
@@ -257,16 +253,25 @@
             window.addEventListener('storage', render);
             window.addEventListener('storageUpdated', render);
 
+            // This function handles the logic for when a date is selected, either by flatpickr or mobile native picker.
+            const handleDateSelection = (dateStr) => {
+                 if (dateStr && dateStr !== getStoredData().tripDate) {
+                    const currentData = getStoredData();
+                    const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
+                    saveData(updatedData);
+                }
+            };
+            
+            // Listener for mobile's native date picker
+            elements.tripDateInput.addEventListener('change', (e) => handleDateSelection(e.target.value));
+
+            // Initialize flatpickr for desktop
             flatpickr(elements.tripDateInput, {
                 dateFormat: "M j, Y",
                 minDate: "today",
                 onClose: function(selectedDates, dateStr, instance) {
-                    if (dateStr && dateStr !== getStoredData().tripDate) {
-                       const currentData = getStoredData();
-                       // When a new date is picked, clear the previously selected time
-                       const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
-                       saveData(updatedData);
-                    }
+                    // This will be triggered on desktop when the calendar closes.
+                    handleDateSelection(dateStr);
                 }
             });
 
