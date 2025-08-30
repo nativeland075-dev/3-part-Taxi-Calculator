@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Stylesheet for the calendar -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
@@ -42,8 +41,16 @@
             font-size: 14px; 
             background: var(--light-gray); 
             transition: all 0.2s ease; 
+            text-align: right;
+            color: var(--text-color);
         }
         .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
+        .input-field::placeholder { color: var(--subtle-text); }
+        /* Style for our readonly date input to make it look like a button */
+        #trip-date-input {
+            cursor: pointer;
+            text-align: center;
+        }
 
         .separator {
             border: none;
@@ -51,98 +58,19 @@
             background-color: var(--medium-gray);
             margin: 54px 0;
         }
-        .slider-group-repositioned {
-            text-align: center;
-            margin-top: -15px;
-        }
-        .slider-value-display {
-            color: var(--primary-color);
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .slider-value-unit {
-            color: var(--dark-gray);
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-        .slider-label-main {
-            color: var(--dark-gray);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .slider-label-sub {
-            color: var(--subtle-text);
-            font-size: 12px;
-        }
-        
-        .slider-container { 
-            margin-bottom: 12px;
-        }
-        
-        .slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 6px;
-            background: #e5e7eb;
-            outline: none;
-            appearance: none;
-        }
-        .slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3);
-        }
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3);
-        }
+        .slider-group-repositioned { text-align: center; margin-top: -15px; }
+        .slider-value-display { color: var(--primary-color); font-size: 28px; font-weight: 700; line-height: 1; }
+        .slider-value-unit { color: var(--dark-gray); font-size: 13px; font-weight: 500; margin-bottom: 16px; }
+        .slider-label-main { color: var(--dark-gray); font-size: 14px; font-weight: 500; }
+        .slider-label-sub { color: var(--subtle-text); font-size: 12px; }
+        .slider-container { margin-bottom: 12px; }
+        .slider { width: 100%; height: 6px; border-radius: 6px; background: #e5e7eb; outline: none; appearance: none; }
+        .slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
+        .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
 
         .rate-indicator { text-align: center; padding: 8px 16px; margin: 16px 0; border-radius: 8px; font-size: 13px; font-weight: 500; }
         .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
         .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
-
-        /* --- CSS FOR DATE BUTTON --- */
-        .date-button {
-            width: 120px;
-            padding: 10px 14px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 12px;
-            font-size: 14px;
-            background: var(--light-gray);
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            color: var(--subtle-text);
-        }
-        .date-button:focus, .date-button:hover {
-            outline: none;
-            border-color: var(--primary-color);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15);
-        }
-        .date-button.has-value span {
-            color: var(--text-color);
-            font-weight: 500;
-        }
-        .date-button svg {
-            width: 16px;
-            height: 16px;
-            stroke: var(--subtle-text);
-        }
     </style>
 </head>
 <body>
@@ -161,15 +89,10 @@
                 <input type="time" id="trip-time" class="input-field">
             </div>
 
-            <!-- --- HTML FOR DATE BUTTON --- -->
+            <!-- *** HTML FIX: Replaced button with a readonly input field *** -->
             <div class="input-group">
-                <label class="input-label" for="trip-date-btn">Trip Date</label>
-                <button type="button" id="trip-date-btn" class="date-button">
-                    <span>Choose a date</span>
-                    <svg xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M12 12.75h.008v.008H12v-.008Z" />
-                    </svg>
-                </button>
+                <label class="input-label" for="trip-date-input">Trip Date</label>
+                <input type="text" id="trip-date-input" class="input-field" placeholder="Choose a date" readonly>
             </div>
 
             <div id="rate-indicator" class="rate-indicator rate-day"></div>
@@ -188,10 +111,7 @@
         </form>
     </div>
 
-    <!-- JavaScript for the calendar -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    
-    <!-- Main JavaScript for the card -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
@@ -201,7 +121,8 @@
                 distance: document.getElementById('distance'),
                 tripTime: document.getElementById('trip-time'),
                 waitingTime: document.getElementById('waiting-time'),
-                tripDateBtn: document.getElementById('trip-date-btn'),
+                // *** JS FIX: Reference the new input element ***
+                tripDateInput: document.getElementById('trip-date-input'),
             };
             const displays = {
                 rateIndicator: document.getElementById('rate-indicator'),
@@ -211,14 +132,8 @@
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
-                    distance: '', 
-                    tripTime: '12:00', 
-                    tripDate: null,
-                    waitingTime: 0,
-                    passengers: 1, 
-                    luggage: 0, 
-                    largeItems: 0, 
-                    mountainClimb: false
+                    distance: '', tripTime: '12:00', tripDate: null, waitingTime: 0,
+                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 };
             };
 
@@ -249,25 +164,21 @@
             const render = () => {
                 const data = getStoredData();
                 
-                if (document.activeElement !== elements.distance) {
-                    elements.distance.value = data.distance;
-                }
-                if (document.activeElement !== elements.tripTime) {
-                    elements.tripTime.value = data.tripTime;
-                }
-                if (document.activeElement !== elements.waitingTime) {
-                    elements.waitingTime.value = data.waitingTime;
-                }
+                if (document.activeElement !== elements.distance) { elements.distance.value = data.distance; }
+                if (document.activeElement !== elements.tripTime) { elements.tripTime.value = data.tripTime; }
+                if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
                 
+                // *** JS FIX: Set the value of the input field, not a span ***
                 if (data.tripDate) {
-                    elements.tripDateBtn.querySelector('span').textContent = data.tripDate;
-                    elements.tripDateBtn.classList.add('has-value');
+                    elements.tripDateInput.value = data.tripDate;
+                } else {
+                    elements.tripDateInput.value = ''; // Clear it if no date is stored
                 }
 
                 displays.waitingValue.textContent = data.waitingTime;
                 
                 if (isNightRate(data.tripTime)) {
-                    displays.rateIndicator.className = 'rate-indicator rate-night';
+                    displays.rateIndicator.className = 'rate-indicator rate-day';
                     displays.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
                 } else {
                     displays.rateIndicator.className = 'rate-indicator rate-day';
@@ -279,27 +190,24 @@
             window.addEventListener('storage', render);
             window.addEventListener('storageUpdated', render);
 
-            // --- Initialize the flatpickr calendar ---
-            flatpickr(elements.tripDateBtn, {
+            // *** Initialize flatpickr on the INPUT element ***
+            flatpickr(elements.tripDateInput, {
                 dateFormat: "M j, Y",
                 minDate: "today",
-                onChange: function(selectedDates, dateStr, instance) {
-                    const currentData = getStoredData();
-                    const updatedData = { ...currentData, tripDate: dateStr };
-                    saveData(updatedData);
+                onClose: function(selectedDates, dateStr, instance) {
+                    // This now fires only after the user has finished their selection
+                    if (dateStr) {
+                       const currentData = getStoredData();
+                       const updatedData = { ...currentData, tripDate: dateStr };
+                       saveData(updatedData);
+                    }
                 }
             });
 
             if (!localStorage.getItem(STORAGE_KEY)) {
                  saveData({
-                    distance: '', 
-                    tripTime: '12:00',
-                    tripDate: null,
-                    waitingTime: 0,
-                    passengers: 1, 
-                    luggage: 0, 
-                    largeItems: 0, 
-                    mountainClimb: false
+                    distance: '', tripTime: '12:00', tripDate: null, waitingTime: 0,
+                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 });
             }
             render();
@@ -307,6 +215,4 @@
     </script>
 </body>
 </html>
-
-
 
