@@ -131,7 +131,8 @@
                  </div>
             </div>
             
-            <div class="input-group" style="border-bottom: none; padding-bottom: 0;">
+            <div class="input-group" style="border-bottom: none; padding-bottom: 0; display: none;">
+                <!-- This input is now hidden, its value will be set by the time-slot buttons -->
                 <label class="input-label" for="trip-time">Trip Time</label>
                 <input type="time" id="trip-time" class="input-field">
             </div>
@@ -169,13 +170,13 @@
                 form: document.getElementById('calculator-form-part1'),
             };
             
-            // Mock data for available time slots. We'll replace this later.
-            const MOCK_AVAILABLE_TIMES = ["08:00", "09:30", "11:00", "14:00", "15:30", "17:00"];
+            // Mock data for available time slots. We'll replace this later with a call to our back-end.
+            const MOCK_AVAILABLE_TIMES = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"];
 
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
-                    distance: '', tripTime: '12:00', tripDate: null, waitingTime: 0,
+                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 };
             };
@@ -196,7 +197,6 @@
                 const updatedData = {
                     ...currentData,
                     distance: parseFloat(elements.distance.value) || '',
-                    tripTime: elements.tripTime.value,
                     waitingTime: parseInt(elements.waitingTime.value, 10) || 0,
                 };
                 saveData(updatedData);
@@ -206,7 +206,7 @@
                 const data = getStoredData();
                 
                 if (document.activeElement !== elements.distance) { elements.distance.value = data.distance; }
-                if (document.activeElement !== elements.tripTime) { elements.tripTime.value = data.tripTime; }
+                elements.tripTime.value = data.tripTime; // Keep hidden input in sync
                 if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
                 
                 if (data.tripDate) {
@@ -220,12 +220,17 @@
                 
                 elements.waitingValue.textContent = data.waitingTime;
                 
-                if (isNightRate(data.tripTime)) {
-                    elements.rateIndicator.className = 'rate-indicator rate-night';
-                    elements.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
+                if (data.tripTime) {
+                    elements.rateIndicator.style.display = 'block';
+                    if (isNightRate(data.tripTime)) {
+                        elements.rateIndicator.className = 'rate-indicator rate-night';
+                        elements.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
+                    } else {
+                        elements.rateIndicator.className = 'rate-indicator rate-day';
+                        elements.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
+                    }
                 } else {
-                    elements.rateIndicator.className = 'rate-indicator rate-day';
-                    elements.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
+                    elements.rateIndicator.style.display = 'none';
                 }
             };
 
@@ -256,7 +261,7 @@
                 dateFormat: "M j, Y",
                 minDate: "today",
                 onClose: function(selectedDates, dateStr, instance) {
-                    if (dateStr) {
+                    if (dateStr && dateStr !== getStoredData().tripDate) {
                        const currentData = getStoredData();
                        // When a new date is picked, clear the previously selected time
                        const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
@@ -267,7 +272,7 @@
 
             if (!localStorage.getItem(STORAGE_KEY)) {
                  saveData({
-                    distance: '', tripTime: '12:00', tripDate: null, waitingTime: 0,
+                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 });
             }
