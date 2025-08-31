@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card 2: Options</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: transparent; padding: 16px; display: flex; justify-content: center; align-items: center; }
+        .calculator-card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid var(--medium-gray); padding: 32px; width: 100%; max-width: 400px; height: 100%; display: flex; flex-direction: column; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            color: var(--text-color);
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .header p {
+             color: var(--subtle-text); 
+             font-size: 14px;
+        }
+
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--light-gray); }
+        .input-group:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .input-label { color: var(--dark-gray); font-size: 14px; font-weight: 500; margin: 0; padding-right: 16px; }
+        .select-field { width: 100px; padding: 10px 14px; border: 1px solid var(--medium-gray); border-radius: 12px; font-size: 14px; background: var(--light-gray); appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position: right 12px center; background-repeat: no-repeat; background-size: 16px; transition: all 0.2s ease; }
+        .select-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
+        
+        .separator {
+            border: none;
+            height: 1px;
+            background-color: var(--medium-gray);
+            margin: 36px 0;
+        }
+
+        .checkbox-group { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 16px; 
+            background: var(--light-gray); 
+            border-radius: 12px; 
+            border: 1px solid var(--medium-gray); 
+            margin-top: 76px;
+        }
+        .checkbox { width: 18px; height: 18px; margin-right: 12px; accent-color: var(--primary-color); }
+        .checkbox-label { color: var(--dark-gray); font-size: 14px; font-weight: 500; cursor: pointer; flex-grow: 1; }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <header class="header">
+            <h1>
+                Options<br>&<br>Surcharges
+            </h1>
+        </header>
+
+        <form id="calculator-form-part2">
+            <div class="input-group">
+                <label class="input-label" for="passengers">Passengers</label>
+                <select id="passengers" class="select-field">
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5+</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="luggage">Luggage (>5kg)</label>
+                <select id="luggage" class="select-field">
+                    <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="large-items">Large Items</label>
+                <select id="large-items" class="select-field">
+                    <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                </select>
+            </div>
+            
+            <hr class="separator">
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="mountain-climb" class="checkbox">
+                <label for="mountain-climb" class="checkbox-label">Mountain Climb Surcharge (+500 XPF)</label>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'taxiFareData';
+
+            const form = document.getElementById('calculator-form-part2');
+            const elements = {
+                passengers: document.getElementById('passengers'),
+                luggage: document.getElementById('luggage'),
+                largeItems: document.getElementById('large-items'),
+                mountainClimb: document.getElementById('mountain-climb'),
+            };
+
+            const getStoredData = () => {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : {
+                    distance: '', tripTime: '12:00', waitingTime: 0,
+                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
+                };
+            };
+
+            const saveData = (data) => {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                window.dispatchEvent(new CustomEvent('storageUpdated'));
+            };
+
+            const handleInput = () => {
+                const currentData = getStoredData();
+                const updatedData = {
+                    ...currentData,
+                    passengers: parseInt(elements.passengers.value, 10) || 1,
+                    luggage: parseInt(elements.luggage.value, 10) || 0,
+                    largeItems: parseInt(elements.largeItems.value, 10) || 0,
+                    mountainClimb: elements.mountainClimb.checked,
+                };
+                saveData(updatedData);
+            };
+
+            const render = () => {
+                const data = getStoredData();
+                elements.passengers.value = data.passengers;
+                elements.luggage.value = data.luggage;
+                elements.largeItems.value = data.largeItems;
+                elements.mountainClimb.checked = data.mountainClimb;
+            };
+
+            form.addEventListener('input', handleInput);
+            form.addEventListener('change', handleInput); 
+            window.addEventListener('storage', render);
+            window.addEventListener('storageUpdated', render);
+            render();
+        });
+    </script>
+</body>
+</html>
