@@ -17,80 +17,14 @@
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 { color: var(--text-color); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
         .header p { color: var(--subtle-text); font-size: 14px; }
-        
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        .input-label {
-            color: var(--dark-gray);
-            font-size: 14px;
-            font-weight: 500;
-            margin: 0;
-            padding-right: 16px;
-        }
-        .input-field { 
-            width: 120px;
-            padding: 10px 14px; 
-            border: 1px solid var(--medium-gray); 
-            border-radius: 12px; 
-            font-size: 14px; 
-            background: var(--light-gray); 
-            transition: all 0.2s ease; 
-            text-align: right;
-            color: var(--text-color);
-            font-family: 'Inter', sans-serif;
-        }
-        .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
-        .input-field::placeholder { color: var(--subtle-text); }
-        #trip-date-input {
-            cursor: pointer;
-            text-align: center;
-        }
-
-        #time-slots-container {
-            display: none; /* Hidden by default */
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--light-gray);
-        }
-        #time-slots-container.is-visible {
-            display: block;
-        }
-        .time-slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-        }
-        .time-slot-btn {
-            padding: 10px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 10px;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        .time-slot-btn:hover {
-            background-color: var(--medium-gray);
-            border-color: #cbd5e1;
-        }
-        .time-slot-btn.is-selected {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            font-weight: 600;
-        }
-
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--light-gray); }
+        .input-label { color: var(--dark-gray); font-size: 14px; font-weight: 500; margin: 0; padding-right: 16px; flex-shrink: 0; }
+        .input-field, .date-input { width: 120px; padding: 10px 14px; border: 1px solid var(--medium-gray); border-radius: 12px; font-size: 14px; background: var(--light-gray); transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+        .input-field:focus, .date-input:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
+        .date-input { cursor: pointer; color: var(--subtle-text); text-align: left; }
+        .date-input.has-value { color: var(--text-color); font-weight: 500; }
         .separator { border: none; height: 1px; background-color: var(--medium-gray); margin: 24px 0; }
-        .slider-group-repositioned { text-align: center; margin-top: 0; }
+        .slider-group-repositioned { text-align: center; }
         .slider-value-display { color: var(--primary-color); font-size: 28px; font-weight: 700; line-height: 1; }
         .slider-value-unit { color: var(--dark-gray); font-size: 13px; font-weight: 500; margin-bottom: 16px; }
         .slider-label-main { color: var(--dark-gray); font-size: 14px; font-weight: 500; }
@@ -99,10 +33,54 @@
         .slider { width: 100%; height: 6px; border-radius: 6px; background: #e5e7eb; outline: none; appearance: none; }
         .slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
         .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
-
-        .rate-indicator { text-align: center; padding: 8px 16px; margin-top: 16px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+        
+        .rate-indicator-wrapper { min-height: 53px; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; }
+        .rate-indicator { 
+            text-align: center; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            visibility: hidden; opacity: 0;
+        }
+        .rate-indicator.is-visible { visibility: visible; opacity: 1; }
         .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
         .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
+        
+        #time-slots-wrapper { min-height: 183px; }
+        #time-slots-container { display: none; margin-top: 16px; }
+        .time-slots-header { font-size: 14px; font-weight: 500; color: var(--dark-gray); margin-bottom: 12px; }
+        .time-slots-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            max-height: 142px; /* Exactly 3 rows: (42px button height * 3) + (8px gap * 2) */
+            overflow-y: auto; padding-right: 8px;
+        }
+        .time-slot-btn {
+            padding: 10px; font-size: 14px; font-weight: 500; border: 1px solid var(--medium-gray);
+            border-radius: 10px; background-color: var(--light-gray); color: var(--dark-gray);
+            cursor: pointer; transition: all 0.2s ease;
+            min-height: 42px;
+        }
+        .time-slot-btn:hover { background-color: var(--medium-gray); border-color: #cbd5e1; }
+        .time-slot-btn.selected { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .error-message { color: #b91c1c; font-size: 13px; text-align: center; margin-top: 10px; grid-column: 1 / -1; }
+
+        .skeleton-item {
+            background-color: #e5e7eb; border-radius: 10px; min-height: 42px;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        #confirmation-view { display: none; text-align: center; }
+        .confirmation-box {
+            display: inline-flex; align-items: center; justify-content: center;
+            background-color: var(--light-gray); border: 1px solid var(--medium-gray);
+            padding: 12px 16px; border-radius: 12px;
+        }
+        .selected-time-text { font-size: 14px; color: var(--dark-gray); font-weight: 500; }
+        .selected-time-value { font-size: 14px; font-weight: 600; color: var(--primary-color); margin-left: 8px; }
+        .change-btn {
+            margin-left: 16px; font-size: 13px; font-weight: 500; color: var(--primary-color);
+            background: none; border: none; cursor: pointer; text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
@@ -117,25 +95,30 @@
                 <input type="number" id="distance" class="input-field" placeholder="Enter distance" min="0" max="500" step="0.1">
             </div>
             <div class="input-group">
-                <label class="input-label" for="trip-date-input">Trip Date</label>
-                <input type="text" id="trip-date-input" class="input-field" placeholder="Choose a date" readonly>
+                <label class="input-label" for="trip-date">Trip Date</label>
+                <input type="text" id="trip-date" class="date-input" placeholder="Choose a date" readonly>
+            </div>
+            
+            <div id="time-slots-wrapper">
+                <div id="time-slots-container">
+                    <p class="time-slots-header">Available Times</p>
+                    <div id="time-slots-grid" class="time-slots-grid"></div>
+                </div>
+                <div id="confirmation-view">
+                     <div class="confirmation-box">
+                        <span class="selected-time-text">Selected Time:</span>
+                        <span id="selected-time-value" class="selected-time-value"></span>
+                        <button type="button" id="change-time-btn" class="change-btn">Change</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rate-indicator-wrapper">
+                <div id="rate-indicator" class="rate-indicator"></div>
             </div>
 
-            <div id="time-slots-container">
-                 <label class="input-label" style="margin-bottom: 12px; display: block;">Available Times</label>
-                 <div class="time-slots-grid" id="time-slots-grid">
-                     <!-- Time slot buttons will be inserted here by JavaScript -->
-                 </div>
-            </div>
-            
-            <div class="input-group" style="border-bottom: none; padding-bottom: 0; display: none;">
-                <!-- This input is now hidden, its value will be set by the time-slot buttons -->
-                <label class="input-label" for="trip-time">Trip Time</label>
-                <input type="time" id="trip-time" class="input-field">
-            </div>
-            
-            <div id="rate-indicator" class="rate-indicator rate-day"></div>
             <hr class="separator">
+
             <div class="slider-group-repositioned">
                 <div class="slider-value-display">
                     <span id="waiting-value">0</span>
@@ -154,25 +137,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const STORAGE_KEY = 'taxiFareData';
-            // The server URL will be replaced with a real one when we deploy.
-            const API_BASE_URL = 'http://localhost:3000'; 
+            const SERVER_URL = 'https://taxi-booking-system-five.vercel.app'; 
 
             const elements = {
+                form: document.getElementById('calculator-form-part1'),
                 distance: document.getElementById('distance'),
-                tripTime: document.getElementById('trip-time'),
-                waitingTime: document.getElementById('waiting-time'),
-                tripDateInput: document.getElementById('trip-date-input'),
+                tripDateInput: document.getElementById('trip-date'),
                 timeSlotsContainer: document.getElementById('time-slots-container'),
                 timeSlotsGrid: document.getElementById('time-slots-grid'),
+                confirmationView: document.getElementById('confirmation-view'),
+                selectedTimeValue: document.getElementById('selected-time-value'),
+                changeTimeBtn: document.getElementById('change-time-btn'),
                 rateIndicator: document.getElementById('rate-indicator'),
+                waitingTime: document.getElementById('waiting-time'),
                 waitingValue: document.getElementById('waiting-value'),
-                form: document.getElementById('calculator-form-part1'),
             };
 
             const getStoredData = () => {
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 return storedData ? JSON.parse(storedData) : {
-                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
+                    distance: '', tripDate: null, tripTime: '', waitingTime: 0,
                     passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
                 };
             };
@@ -181,127 +165,146 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 window.dispatchEvent(new CustomEvent('storageUpdated'));
             };
-            
+
             const isNightRate = (timeString) => {
                 if (!timeString) return false;
                 const hour = parseInt(timeString.split(':')[0], 10);
                 return hour >= 20 || hour < 6;
             };
 
-            const handleInput = (event) => {
+            const handleInput = () => {
                 const currentData = getStoredData();
+                const distanceValue = elements.distance.value;
                 const updatedData = {
                     ...currentData,
-                    distance: parseFloat(elements.distance.value) || '',
+                    distance: distanceValue.endsWith('.') ? distanceValue : (parseFloat(distanceValue) || ''),
                     waitingTime: parseInt(elements.waitingTime.value, 10) || 0,
                 };
                 saveData(updatedData);
             };
 
+            const renderSkeletonLoader = () => {
+                elements.timeSlotsGrid.innerHTML = '';
+                for (let i = 0; i < 9; i++) {
+                    const skeleton = document.createElement('div');
+                    skeleton.className = 'skeleton-item';
+                    elements.timeSlotsGrid.appendChild(skeleton);
+                }
+                elements.timeSlotsContainer.style.display = 'block';
+                elements.confirmationView.style.display = 'none';
+            };
+
+            const fetchAndRenderTimes = async (dateStr) => {
+                renderSkeletonLoader();
+                try {
+                    const response = await fetch(`${SERVER_URL}/api/available-times?date=${dateStr}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    renderTimeSlots(data.times);
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    elements.timeSlotsGrid.innerHTML = `<p class="error-message">Could not load times. Please try again.</p>`;
+                }
+            };
+            
+            const renderTimeSlots = (times) => {
+                elements.timeSlotsGrid.innerHTML = '';
+                if (times && times.length > 0) {
+                    times.forEach(time => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'time-slot-btn';
+                        btn.textContent = time;
+                        btn.dataset.time = time;
+                        elements.timeSlotsGrid.appendChild(btn);
+                    });
+                } else {
+                    elements.timeSlotsGrid.innerHTML = `<p class="error-message">No available slots for this day.</p>`;
+                }
+            };
+
             const render = () => {
                 const data = getStoredData();
                 
-                if (document.activeElement !== elements.distance) { elements.distance.value = data.distance; }
-                elements.tripTime.value = data.tripTime;
-                if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
-                
+                if (document.activeElement !== elements.distance) {
+                    elements.distance.value = data.distance;
+                }
+                if (document.activeElement !== elements.waitingTime) {
+                    elements.waitingTime.value = data.waitingTime;
+                }
+                elements.waitingValue.textContent = data.waitingTime;
+
                 if (data.tripDate) {
                     elements.tripDateInput.value = data.tripDate;
-                    elements.timeSlotsContainer.classList.add('is-visible');
-                    // We don't populate slots here anymore, fetchAvailableTimes does that.
+                    elements.tripDateInput.classList.add('has-value');
+                    
+                    if(data.tripTime) {
+                        elements.timeSlotsContainer.style.display = 'none';
+                        elements.confirmationView.style.display = 'block';
+                        elements.selectedTimeValue.textContent = data.tripTime;
+                    } else {
+                        elements.timeSlotsContainer.style.display = 'block';
+                        elements.confirmationView.style.display = 'none';
+                    }
                 } else {
-                    elements.tripDateInput.value = '';
-                    elements.timeSlotsContainer.classList.remove('is-visible');
+                    elements.timeSlotsContainer.style.display = 'none';
+                    elements.confirmationView.style.display = 'none';
                 }
-                
-                elements.waitingValue.textContent = data.waitingTime;
-                
+
                 if (data.tripTime) {
-                    elements.rateIndicator.style.display = 'block';
+                    elements.rateIndicator.classList.add('is-visible');
                     if (isNightRate(data.tripTime)) {
-                        elements.rateIndicator.className = 'rate-indicator rate-night';
+                        elements.rateIndicator.className = 'rate-indicator is-visible rate-night';
                         elements.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
                     } else {
-                        elements.rateIndicator.className = 'rate-indicator rate-day';
+                        elements.rateIndicator.className = 'rate-indicator is-visible rate-day';
                         elements.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
                     }
                 } else {
-                    elements.rateIndicator.style.display = 'none';
-                }
-                 // We need to re-populate time slots on every render to show the selected state
-                if(data.tripDate) {
-                    populateTimeSlots(window.availableTimes || [], data.tripTime);
+                    elements.rateIndicator.classList.remove('is-visible');
                 }
             };
 
-            const populateTimeSlots = (times, selectedTime) => {
-                elements.timeSlotsGrid.innerHTML = '';
-                 if (times.length === 0) {
-                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: var(--subtle-text); grid-column: 1 / -1; text-align: center;">Fetching times...</p>';
-                    return;
-                }
-                times.forEach(time => {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = 'time-slot-btn';
-                    button.textContent = time;
-                    if (time === selectedTime) {
-                        button.classList.add('is-selected');
-                    }
-                    button.addEventListener('click', () => {
-                        const currentData = getStoredData();
-                        const updatedData = { ...currentData, tripTime: time };
-                        saveData(updatedData);
-                    });
-                    elements.timeSlotsGrid.appendChild(button);
-                });
-            };
-
-            const fetchAvailableTimes = async (dateStr) => {
-                // Show a loading state
-                populateTimeSlots([], null); 
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/available-times?date=${encodeURIComponent(dateStr)}`);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const data = await response.json();
-                    window.availableTimes = data.times; // Store times globally for re-renders
-                    populateTimeSlots(data.times, getStoredData().tripTime);
-                } catch (error) {
-                    console.error('Failed to fetch available times:', error);
-                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: #b91c1c; grid-column: 1 / -1; text-align: center;">Could not load times. Please try again.</p>';
-                }
-            };
-            
-            const handleDateSelection = (dateStr) => {
-                 if (dateStr && dateStr !== getStoredData().tripDate) {
-                    const currentData = getStoredData();
+            const handleDateChange = (dateStr) => {
+                const currentData = getStoredData();
+                if (dateStr && dateStr !== currentData.tripDate) {
                     const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
                     saveData(updatedData);
-                    fetchAvailableTimes(dateStr); // Fetch times for the new date
+                    fetchAndRenderTimes(dateStr);
                 }
             };
             
-            elements.form.addEventListener('input', handleInput);
-            window.addEventListener('storage', render);
-            window.addEventListener('storageUpdated', render);
-
-            elements.tripDateInput.addEventListener('change', (e) => handleDateSelection(e.target.value));
-
             flatpickr(elements.tripDateInput, {
                 dateFormat: "M j, Y",
                 minDate: "today",
-                onClose: function(selectedDates, dateStr, instance) {
-                    handleDateSelection(dateStr);
+                static: true, // This helps prevent closing on outside clicks
+                onClose: (selectedDates, dateStr, instance) => handleDateChange(dateStr),
+            });
+            elements.tripDateInput.addEventListener('change', (e) => handleDateChange(e.target.value));
+
+            elements.timeSlotsGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('time-slot-btn')) {
+                    const selectedTime = e.target.dataset.time;
+                    const currentData = getStoredData();
+                    const updatedData = { ...currentData, tripTime: selectedTime };
+                    saveData(updatedData);
                 }
             });
+            
+            elements.changeTimeBtn.addEventListener('click', () => {
+                const currentData = getStoredData();
+                const updatedData = { ...currentData, tripTime: '' };
+                saveData(updatedData);
+                fetchAndRenderTimes(currentData.tripDate); // Re-fetch times to show the grid again
+            });
 
-            if (!localStorage.getItem(STORAGE_KEY)) {
-                 saveData({
-                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
-                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
-                });
+            elements.form.addEventListener('input', handleInput);
+            window.addEventListener('storageUpdated', render);
+
+            // Initial render on page load
+            const initialData = getStoredData();
+            if (initialData.tripDate && !initialData.tripTime) {
+                fetchAndRenderTimes(initialData.tripDate);
             }
             render();
         });
