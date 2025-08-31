@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card 1: Inputs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: transparent; padding: 16px; display: flex; justify-content: center; align-items: center; }
+        .calculator-card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid var(--medium-gray); padding: 32px; width: 100%; max-width: 400px; height: 100%; display: flex; flex-direction: column; }
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h1 { color: var(--text-color); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .header p { color: var(--subtle-text); font-size: 14px; }
+        
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .input-label {
+            color: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0;
+            padding-right: 16px;
+        }
+        .input-field { 
+            width: 120px;
+            padding: 10px 14px; 
+            border: 1px solid var(--medium-gray); 
+            border-radius: 12px; 
+            font-size: 14px; 
+            background: var(--light-gray); 
+            transition: all 0.2s ease; 
+            text-align: right;
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .input-field:focus { outline: none; border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15); }
+        .input-field::placeholder { color: var(--subtle-text); }
+        #trip-date-input {
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #time-slots-container {
+            display: none; /* Hidden by default */
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--light-gray);
+        }
+        #time-slots-container.is-visible {
+            display: block;
+        }
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        .time-slot-btn {
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 10px;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .time-slot-btn:hover {
+            background-color: var(--medium-gray);
+            border-color: #cbd5e1;
+        }
+        .time-slot-btn.is-selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .separator { border: none; height: 1px; background-color: var(--medium-gray); margin: 24px 0; }
+        .slider-group-repositioned { text-align: center; margin-top: 0; }
+        .slider-value-display { color: var(--primary-color); font-size: 28px; font-weight: 700; line-height: 1; }
+        .slider-value-unit { color: var(--dark-gray); font-size: 13px; font-weight: 500; margin-bottom: 16px; }
+        .slider-label-main { color: var(--dark-gray); font-size: 14px; font-weight: 500; }
+        .slider-label-sub { color: var(--subtle-text); font-size: 12px; }
+        .slider-container { margin-bottom: 12px; }
+        .slider { width: 100%; height: 6px; border-radius: 6px; background: #e5e7eb; outline: none; appearance: none; }
+        .slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
+        .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3); }
+
+        .rate-indicator { text-align: center; padding: 8px 16px; margin-top: 16px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+        .rate-day { background: #ecfccb; color: #365314; border: 1px solid #bef264; }
+        .rate-night { background: #f3e8ff; color: #581c87; border: 1px solid #c084fc; }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <header class="header">
+            <h1>Taxi Fare Calculator For Tahiti & Moorea</h1>
+            <p>Official rates and real-time calculations</p>
+        </header>
+        <form id="calculator-form-part1">
+            <div class="input-group">
+                <label class="input-label" for="distance">Distance (km)</label>
+                <input type="number" id="distance" class="input-field" placeholder="Enter distance" min="0" max="500" step="0.1">
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="trip-date-input">Trip Date</label>
+                <input type="text" id="trip-date-input" class="input-field" placeholder="Choose a date" readonly>
+            </div>
+
+            <div id="time-slots-container">
+                 <label class="input-label" style="margin-bottom: 12px; display: block;">Available Times</label>
+                 <div class="time-slots-grid" id="time-slots-grid">
+                     <!-- Time slot buttons will be inserted here by JavaScript -->
+                 </div>
+            </div>
+            
+            <div class="input-group" style="border-bottom: none; padding-bottom: 0; display: none;">
+                <!-- This input is now hidden, its value will be set by the time-slot buttons -->
+                <label class="input-label" for="trip-time">Trip Time</label>
+                <input type="time" id="trip-time" class="input-field">
+            </div>
+            
+            <div id="rate-indicator" class="rate-indicator rate-day"></div>
+            <hr class="separator">
+            <div class="slider-group-repositioned">
+                <div class="slider-value-display">
+                    <span id="waiting-value">0</span>
+                </div>
+                <p class="slider-value-unit">minutes</p>
+                <div class="slider-container">
+                    <input type="range" id="waiting-time" class="slider" value="0" min="0" max="300" step="1">
+                </div>
+                <p class="slider-label-main">Waiting Time</p>
+                <p class="slider-label-sub">(Traffic delays, stops etc.)</p>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'taxiFareData';
+            // The server URL will be replaced with a real one when we deploy.
+            const API_BASE_URL = 'http://localhost:3000'; 
+
+            const elements = {
+                distance: document.getElementById('distance'),
+                tripTime: document.getElementById('trip-time'),
+                waitingTime: document.getElementById('waiting-time'),
+                tripDateInput: document.getElementById('trip-date-input'),
+                timeSlotsContainer: document.getElementById('time-slots-container'),
+                timeSlotsGrid: document.getElementById('time-slots-grid'),
+                rateIndicator: document.getElementById('rate-indicator'),
+                waitingValue: document.getElementById('waiting-value'),
+                form: document.getElementById('calculator-form-part1'),
+            };
+
+            const getStoredData = () => {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : {
+                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
+                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
+                };
+            };
+
+            const saveData = (data) => {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                window.dispatchEvent(new CustomEvent('storageUpdated'));
+            };
+            
+            const isNightRate = (timeString) => {
+                if (!timeString) return false;
+                const hour = parseInt(timeString.split(':')[0], 10);
+                return hour >= 20 || hour < 6;
+            };
+
+            const handleInput = (event) => {
+                const currentData = getStoredData();
+                const updatedData = {
+                    ...currentData,
+                    distance: parseFloat(elements.distance.value) || '',
+                    waitingTime: parseInt(elements.waitingTime.value, 10) || 0,
+                };
+                saveData(updatedData);
+            };
+
+            const render = () => {
+                const data = getStoredData();
+                
+                if (document.activeElement !== elements.distance) { elements.distance.value = data.distance; }
+                elements.tripTime.value = data.tripTime;
+                if (document.activeElement !== elements.waitingTime) { elements.waitingTime.value = data.waitingTime; }
+                
+                if (data.tripDate) {
+                    elements.tripDateInput.value = data.tripDate;
+                    elements.timeSlotsContainer.classList.add('is-visible');
+                    // We don't populate slots here anymore, fetchAvailableTimes does that.
+                } else {
+                    elements.tripDateInput.value = '';
+                    elements.timeSlotsContainer.classList.remove('is-visible');
+                }
+                
+                elements.waitingValue.textContent = data.waitingTime;
+                
+                if (data.tripTime) {
+                    elements.rateIndicator.style.display = 'block';
+                    if (isNightRate(data.tripTime)) {
+                        elements.rateIndicator.className = 'rate-indicator rate-night';
+                        elements.rateIndicator.textContent = `Night Rate: 260 XPF/km (20:00 - 6:00)`;
+                    } else {
+                        elements.rateIndicator.className = 'rate-indicator rate-day';
+                        elements.rateIndicator.textContent = `Day Rate: 160 XPF/km (6:00 - 20:00)`;
+                    }
+                } else {
+                    elements.rateIndicator.style.display = 'none';
+                }
+                 // We need to re-populate time slots on every render to show the selected state
+                if(data.tripDate) {
+                    populateTimeSlots(window.availableTimes || [], data.tripTime);
+                }
+            };
+
+            const populateTimeSlots = (times, selectedTime) => {
+                elements.timeSlotsGrid.innerHTML = '';
+                 if (times.length === 0) {
+                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: var(--subtle-text); grid-column: 1 / -1; text-align: center;">Fetching times...</p>';
+                    return;
+                }
+                times.forEach(time => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'time-slot-btn';
+                    button.textContent = time;
+                    if (time === selectedTime) {
+                        button.classList.add('is-selected');
+                    }
+                    button.addEventListener('click', () => {
+                        const currentData = getStoredData();
+                        const updatedData = { ...currentData, tripTime: time };
+                        saveData(updatedData);
+                    });
+                    elements.timeSlotsGrid.appendChild(button);
+                });
+            };
+
+            const fetchAvailableTimes = async (dateStr) => {
+                // Show a loading state
+                populateTimeSlots([], null); 
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/available-times?date=${encodeURIComponent(dateStr)}`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    window.availableTimes = data.times; // Store times globally for re-renders
+                    populateTimeSlots(data.times, getStoredData().tripTime);
+                } catch (error) {
+                    console.error('Failed to fetch available times:', error);
+                    elements.timeSlotsGrid.innerHTML = '<p style="font-size: 13px; color: #b91c1c; grid-column: 1 / -1; text-align: center;">Could not load times. Please try again.</p>';
+                }
+            };
+            
+            const handleDateSelection = (dateStr) => {
+                 if (dateStr && dateStr !== getStoredData().tripDate) {
+                    const currentData = getStoredData();
+                    const updatedData = { ...currentData, tripDate: dateStr, tripTime: '' };
+                    saveData(updatedData);
+                    fetchAvailableTimes(dateStr); // Fetch times for the new date
+                }
+            };
+            
+            elements.form.addEventListener('input', handleInput);
+            window.addEventListener('storage', render);
+            window.addEventListener('storageUpdated', render);
+
+            elements.tripDateInput.addEventListener('change', (e) => handleDateSelection(e.target.value));
+
+            flatpickr(elements.tripDateInput, {
+                dateFormat: "M j, Y",
+                minDate: "today",
+                onClose: function(selectedDates, dateStr, instance) {
+                    handleDateSelection(dateStr);
+                }
+            });
+
+            if (!localStorage.getItem(STORAGE_KEY)) {
+                 saveData({
+                    distance: '', tripTime: '', tripDate: null, waitingTime: 0,
+                    passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false
+                });
+            }
+            render();
+        });
+    </script>
+</body>
+</html>

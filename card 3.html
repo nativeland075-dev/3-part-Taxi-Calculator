@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card 3: Fare Breakdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #0891b2; --light-gray: #f8fafc; --medium-gray: #e2e8f0; --dark-gray: #374151; --text-color: #1e293b; --subtle-text: #64748b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: transparent; padding: 16px; display: flex; justify-content: center; }
+        .calculator-card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid var(--medium-gray); padding: 32px; width: 100%; max-width: 400px; display: flex; flex-direction: column; }
+        .card-title { color: var(--text-color); font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+        .breakdown-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--light-gray); }
+        .breakdown-label { color: var(--subtle-text); font-size: 14px; }
+        .breakdown-value { color: var(--text-color); font-size: 14px; font-weight: 500; }
+        .breakdown-item.total-row { border-bottom: none; border-top: 2px solid var(--medium-gray); margin-top: 16px; padding-top: 16px; font-weight: 600; }
+        .breakdown-item.total-row .breakdown-label { color: var(--text-color); font-weight: 600; }
+        .total-fare { background: var(--primary-color); color: white; border-radius: 12px; padding: 16px 20px; text-align: center; }
+        .total-label { font-size: 14px; font-weight: 500; opacity: 0.9; }
+        .total-amount { font-size: 28px; font-weight: 700; }
+        footer { text-align: center; margin-top: 16px; }
+        .disclaimer { font-size: 12px; color: var(--subtle-text); font-style: italic; }
+        .src-link { margin-top: 8px; }
+        .src-link a { color: var(--primary-color); font-size: 12px; text-decoration: none; font-style: italic; }
+        .actions-container { display: flex; justify-content: center; margin-top: 24px; border-top: 1px solid var(--light-gray); padding-top: 24px; }
+        .action-btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--medium-gray); background-color: var(--light-gray); color: var(--dark-gray); font-size: 13px; font-weight: 500; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease; box-shadow: 0 1px 0 #cbd5e1; }
+        .action-btn:hover { background-color: var(--medium-gray); border-color: #cbd5e1; }
+        .action-btn:active { box-shadow: none; transform: translateY(3px); }
+        .action-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+        #receipt-template { display: none; color: #000; font-family: sans-serif; }
+        #receipt-template h2 { text-align: center; font-size: 20px; margin-bottom: 4px; }
+        #receipt-template .subtitle, #receipt-template .generated-on { text-align: center; font-size: 12px; color: #555; margin-bottom: 16px; }
+        #receipt-template hr { border: 0; border-top: 1px dashed #888; margin: 16px 0; }
+        #receipt-template h4 { font-size: 14px; margin-bottom: 12px; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+        #receipt-template .receipt-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+        #receipt-template .receipt-label { color: #555; }
+        #receipt-template .receipt-value { font-weight: 500; }
+        #receipt-template .total-row-receipt { margin-top: 16px; padding-top: 16px; }
+        #receipt-template .total-row-receipt .receipt-label, #receipt-template .total-row-receipt .receipt-value { font-size: 18px; font-weight: 700; }
+        #receipt-template .receipt-disclaimer { margin-top: 24px; font-size: 10px; color: #555; text-align: center; font-style: italic; }
+        #confirm-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
+        #confirm-modal-overlay.is-visible { display: flex; }
+        .modal-content { background: white; padding: 24px 32px; border-radius: 16px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); border: 1px solid var(--medium-gray); text-align: center; max-width: 380px; width: 100%; }
+        .modal-content h3 { font-size: 18px; color: var(--text-color); margin-bottom: 8px; font-weight: 600; }
+        .modal-content p { font-size: 14px; color: var(--subtle-text); margin-bottom: 24px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .modal-btn { padding: 10px 20px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s ease; flex-grow: 1; }
+        .modal-btn-primary { background-color: var(--primary-color); color: white; }
+        .modal-btn-primary:hover { opacity: 0.9; }
+        .modal-btn-secondary { background-color: var(--medium-gray); color: var(--dark-gray); }
+        .modal-btn-secondary:hover { background-color: #cbd5e1; }
+        @keyframes shake { 10%, 90% { transform: translateX(-5px); } 20%, 80% { transform: translateX(5px); } 30%, 50%, 70% { transform: translateX(-5px); } 40%, 60% { transform: translateX(5px); } }
+        .modal-content.is-shaking { animation: shake 0.5s; }
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-template, #receipt-template * { visibility: visible; }
+            #receipt-template { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <h2 class="card-title">Fare Breakdown</h2>
+        <div class="breakdown-item"><span class="breakdown-label">Base Fare</span><span class="breakdown-value" id="base-fare"></span></div>
+        <div class="breakdown-item"><span class="breakdown-label">Distance (<span id="distance-display">0.0</span> km)</span><span class="breakdown-value" id="distance-subtotal"></span></div>
+        <div class="breakdown-item"><span class="breakdown-label">Waiting Time (<span id="waiting-display">0</span> min)</span><span class="breakdown-value" id="waiting-subtotal"></span></div>
+        <div class="breakdown-item"><span class="breakdown-label">Surcharges</span><span class="breakdown-value" id="surcharges-subtotal"></span></div>
+        <div class="breakdown-item total-row"><span class="breakdown-label">Total Estimate</span><span class="breakdown-value" id="breakdown-total"></span></div>
+        <div class="total-fare">
+            <div class="total-label">Total Estimate</div>
+            <div class="total-amount" id="total-amount" aria-live="polite"></div>
+        </div>
+        <footer>
+            <p class="disclaimer">The actual fare will be determined by the meter at the end of the trip.</p>
+            <p class="src-link"><a href="https://drive.google.com/file/d/16ln8X26blU9I3ItLeMwmFRVgeQnk0GqC/view?usp=sharing" target="_blank">Official Rate Source</a></p>
+        </footer>
+        <div class="actions-container">
+            <button id="print-btn" class="action-btn" title="Print or Save as PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6 3.189m0 10.64l.72-3.623M17.28 13.829c.24.03.48.062.72.096m-.72-.096a42.415 42.415 0 00-10.56 0m10.56 0L18 3.189m0 10.64l-.72-3.623m0 0a2.25 2.25 0 00-2.14-2.14H8.86a2.25 2.25 0 00-2.14 2.14m7.56 0a2.25 2.25 0 012.14 2.14H6.72a2.25 2.25 0 012.14-2.14m7.56 0a2.25 2.25 0 01-2.14 2.14H8.86a2.25 2.25 0 01-2.14-2.14" /></svg>
+                Print / Save PDF
+            </button>
+        </div>
+    </div>
+    
+    <div id="receipt-template">
+        <h2>Taxi Fare Estimate</h2>
+        <p class="subtitle">Tahiti & Moorea</p>
+        <p class="generated-on">Generated on: <span id="receipt-date"></span></p>
+        <hr>
+        <h4>Trip Summary</h4>
+        <div class="receipt-row">
+            <span class="receipt-label">Passengers:</span>
+            <span class="receipt-value" id="receipt-passengers"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Distance:</span>
+            <span class="receipt-value" id="receipt-distance"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Selected Time:</span>
+            <span class="receipt-value" id="receipt-time"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Rate Applied:</span>
+            <span class="receipt-value" id="receipt-rate-type"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Waiting Time:</span>
+            <span class="receipt-value" id="receipt-waiting"></span>
+        </div>
+        <hr>
+        <h4>Fare Breakdown</h4>
+        <div class="receipt-row">
+            <span class="receipt-label">Base Fare:</span>
+            <span class="receipt-value" id="receipt-base-fare"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Distance Cost:</span>
+            <span class="receipt-value" id="receipt-distance-cost"></span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Waiting Time Cost:</span>
+            <span class="receipt-value" id="receipt-waiting-cost"></span>
+        </div>
+        <div class="receipt-row" id="receipt-surcharge-luggage-row" style="display: none;">
+            <span class="receipt-label">Luggage Surcharge:</span>
+            <span class="receipt-value" id="receipt-surcharge-luggage"></span>
+        </div>
+        <div class="receipt-row" id="receipt-surcharge-large-items-row" style="display: none;">
+            <span class="receipt-label">Large Items Surcharge:</span>
+            <span class="receipt-value" id="receipt-surcharge-large-items"></span>
+        </div>
+        <div class="receipt-row" id="receipt-surcharge-mountain-climb-row" style="display: none;">
+            <span class="receipt-label">Mountain Climb Surcharge:</span>
+            <span class="receipt-value" id="receipt-surcharge-mountain-climb"></span>
+        </div>
+        <div class="receipt-row" id="receipt-surcharge-fifth-passenger-row" style="display: none;">
+            <span class="receipt-label">5th Passenger Surcharge:</span>
+            <span class="receipt-value" id="receipt-surcharge-fifth-passenger"></span>
+        </div>
+        <hr>
+        <div class="receipt-row total-row-receipt">
+            <span class="receipt-label">TOTAL ESTIMATE</span>
+            <span class="receipt-value" id="receipt-total"></span>
+        </div>
+        <p class="receipt-disclaimer">This is an estimate only. The actual fare will be determined by the official taxi meter at the end of the trip.</p>
+    </div>
+
+    <div id="confirm-modal-overlay">
+        <div class="modal-content">
+            <h3>Print Fare Estimate?</h3>
+            <p>This will open a new tab to generate a printable PDF. Do you want to continue?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="modal-btn modal-btn-secondary">Cancel</button>
+                <button id="modal-confirm-btn" class="modal-btn modal-btn-primary">Continue & Print</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'taxiFareData';
+            const displays = {
+                baseFare: document.getElementById('base-fare'),
+                distanceDisplay: document.getElementById('distance-display'),
+                distanceSubtotal: document.getElementById('distance-subtotal'),
+                waitingDisplay: document.getElementById('waiting-display'),
+                waitingSubtotal: document.getElementById('waiting-subtotal'),
+                surchargesSubtotal: document.getElementById('surcharges-subtotal'),
+                breakdownTotal: document.getElementById('breakdown-total'),
+                totalAmount: document.getElementById('total-amount'),
+            };
+            const receiptDisplays = {
+                date: document.getElementById('receipt-date'),
+                distance: document.getElementById('receipt-distance'),
+                passengers: document.getElementById('receipt-passengers'),
+                time: document.getElementById('receipt-time'),
+                rateType: document.getElementById('receipt-rate-type'),
+                waiting: document.getElementById('receipt-waiting'),
+                baseFare: document.getElementById('receipt-base-fare'),
+                distanceCost: document.getElementById('receipt-distance-cost'),
+                waitingCost: document.getElementById('receipt-waiting-cost'),
+                surchargeLuggageRow: document.getElementById('receipt-surcharge-luggage-row'),
+                surchargeLuggage: document.getElementById('receipt-surcharge-luggage'),
+                surchargeLargeItemsRow: document.getElementById('receipt-surcharge-large-items-row'),
+                surchargeLargeItems: document.getElementById('receipt-surcharge-large-items'),
+                surchargeMountainClimbRow: document.getElementById('receipt-surcharge-mountain-climb-row'),
+                surchargeMountainClimb: document.getElementById('receipt-surcharge-mountain-climb'),
+                surchargeFifthPassengerRow: document.getElementById('receipt-surcharge-fifth-passenger-row'),
+                surchargeFifthPassenger: document.getElementById('receipt-surcharge-fifth-passenger'),
+                total: document.getElementById('receipt-total'),
+            };
+
+            const printBtn = document.getElementById('print-btn');
+            const RATES = { baseFare: 1000, dayRatePerKm: 160, nightRatePerKm: 260, waitingRatePerMinute: 2500 / 60, surcharges: { luggage: 100, largeItem: 500, mountainClimb: 500, fifthPassenger: 500 } };
+            const currencyFormatter = new Intl.NumberFormat('fr-PF', { style: 'currency', currency: 'XPF', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            
+            const getStoredData = () => {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : { distance: 0, tripTime: '12:00', waitingTime: 0, passengers: 1, luggage: 0, largeItems: 0, mountainClimb: false };
+            };
+            
+            const isNightRate = (timeString) => {
+                if (!timeString) return false;
+                const hour = parseInt(timeString.split(':')[0], 10);
+                return hour >= 20 || hour < 6;
+            };
+
+            const getCalculation = (data) => {
+                const baseFare = RATES.baseFare;
+                const nightRate = isNightRate(data.tripTime);
+                const ratePerKm = nightRate ? RATES.nightRatePerKm : RATES.dayRatePerKm;
+                const distanceSubtotal = (parseFloat(data.distance) || 0) * ratePerKm;
+                const waitingSubtotal = data.waitingTime * RATES.waitingRatePerMinute;
+                let surcharges = 0;
+                surcharges += data.luggage * RATES.surcharges.luggage;
+                surcharges += data.largeItems * RATES.surcharges.largeItem;
+                if (data.mountainClimb) surcharges += RATES.surcharges.mountainClimb;
+                if (data.passengers === 5) surcharges += RATES.surcharges.fifthPassenger;
+                const totalFare = baseFare + distanceSubtotal + waitingSubtotal + surcharges;
+                return { baseFare, nightRate, ratePerKm, distanceSubtotal, waitingSubtotal, surcharges, totalFare };
+            };
+
+            const render = (data) => {
+                const { baseFare, distanceSubtotal, waitingSubtotal, surcharges, totalFare } = getCalculation(data);
+                displays.baseFare.textContent = currencyFormatter.format(baseFare);
+                displays.distanceDisplay.textContent = (parseFloat(data.distance) || 0).toFixed(1);
+                displays.distanceSubtotal.textContent = currencyFormatter.format(distanceSubtotal);
+                displays.waitingDisplay.textContent = data.waitingTime;
+                displays.waitingSubtotal.textContent = currencyFormatter.format(waitingSubtotal);
+                displays.surchargesSubtotal.textContent = currencyFormatter.format(surcharges);
+                displays.breakdownTotal.textContent = currencyFormatter.format(totalFare);
+                displays.totalAmount.textContent = currencyFormatter.format(totalFare);
+            };
+            
+            const populateReceiptAndPrint = (data) => {
+                const calculated = getCalculation(data);
+                
+                receiptDisplays.date.textContent = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                receiptDisplays.distance.textContent = `${(parseFloat(data.distance) || 0).toFixed(1)} km`;
+                
+                const passengerText = data.passengers > 1 ? 'passengers' : 'passenger';
+                receiptDisplays.passengers.textContent = `${data.passengers}${data.passengers === 5 ? '+' : ''} ${passengerText}`;
+                
+                receiptDisplays.time.textContent = data.tripTime;
+                receiptDisplays.rateType.textContent = calculated.nightRate ? `Night Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)` : `Day Rate (${currencyFormatter.format(calculated.ratePerKm)}/km)`;
+                receiptDisplays.waiting.textContent = `${data.waitingTime} minutes`;
+                receiptDisplays.baseFare.textContent = currencyFormatter.format(calculated.baseFare);
+                receiptDisplays.distanceCost.textContent = currencyFormatter.format(calculated.distanceSubtotal);
+                receiptDisplays.waitingCost.textContent = currencyFormatter.format(calculated.waitingSubtotal);
+
+                const luggageCost = data.luggage * RATES.surcharges.luggage;
+                if (luggageCost > 0) {
+                    receiptDisplays.surchargeLuggage.textContent = currencyFormatter.format(luggageCost);
+                    receiptDisplays.surchargeLuggageRow.style.display = 'flex';
+                } else {
+                    receiptDisplays.surchargeLuggageRow.style.display = 'none';
+                }
+
+                const largeItemsCost = data.largeItems * RATES.surcharges.largeItem;
+                if (largeItemsCost > 0) {
+                    receiptDisplays.surchargeLargeItems.textContent = currencyFormatter.format(largeItemsCost);
+                    receiptDisplays.surchargeLargeItemsRow.style.display = 'flex';
+                } else {
+                    receiptDisplays.surchargeLargeItemsRow.style.display = 'none';
+                }
+
+                const mountainClimbCost = data.mountainClimb ? RATES.surcharges.mountainClimb : 0;
+                if (mountainClimbCost > 0) {
+                    receiptDisplays.surchargeMountainClimb.textContent = currencyFormatter.format(mountainClimbCost);
+                    receiptDisplays.surchargeMountainClimbRow.style.display = 'flex';
+                } else {
+                    receiptDisplays.surchargeMountainClimbRow.style.display = 'none';
+                }
+
+                const fifthPassengerCost = data.passengers === 5 ? RATES.surcharges.fifthPassenger : 0;
+                if (fifthPassengerCost > 0) {
+                    receiptDisplays.surchargeFifthPassenger.textContent = currencyFormatter.format(fifthPassengerCost);
+                    receiptDisplays.surchargeFifthPassengerRow.style.display = 'flex';
+                } else {
+                    receiptDisplays.surchargeFifthPassengerRow.style.display = 'none';
+                }
+                
+                receiptDisplays.total.textContent = currencyFormatter.format(calculated.totalFare);
+                
+                setTimeout(() => {
+                    window.print();
+                }, 1);
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('print') === 'true') {
+                document.querySelector('.calculator-card').style.display = 'none';
+                const dataFromUrl = {
+                    distance: urlParams.get('distance'),
+                    tripTime: urlParams.get('tripTime'),
+                    waitingTime: parseInt(urlParams.get('waitingTime'), 10),
+                    passengers: parseInt(urlParams.get('passengers'), 10),
+                    luggage: parseInt(urlParams.get('luggage'), 10),
+                    largeItems: parseInt(urlParams.get('largeItems'), 10),
+                    mountainClimb: urlParams.get('mountainClimb') === 'true'
+                };
+                populateReceiptAndPrint(dataFromUrl);
+            } else {
+                const confirmModal = document.getElementById('confirm-modal-overlay');
+                const modalContent = document.querySelector('.modal-content');
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+
+                window.addEventListener('storage', () => render(getStoredData()));
+                window.addEventListener('storageUpdated', () => render(getStoredData()));
+                
+                render(getStoredData());
+
+                printBtn.addEventListener('click', () => {
+                    confirmModal.classList.add('is-visible');
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    confirmModal.classList.remove('is-visible');
+                });
+
+                confirmModal.addEventListener('click', (e) => {
+                    if (e.target === confirmModal) {
+                        modalContent.classList.add('is-shaking');
+                        setTimeout(() => {
+                            modalContent.classList.remove('is-shaking');
+                        }, 500);
+                    }
+                });
+                
+                confirmBtn.addEventListener('click', () => {
+                    const data = getStoredData();
+                    const params = new URLSearchParams({
+                        distance: data.distance,
+                        tripTime: data.tripTime,
+                        waitingTime: data.waitingTime,
+                        passengers: data.passengers,
+                        luggage: data.luggage,
+                        largeItems: data.largeItems,
+                        mountainClimb: data.mountainClimb,
+                        print: 'true'
+                    });
+                    window.open(`${window.location.pathname}?${params.toString()}`, '_blank');
+                    confirmModal.classList.remove('is-visible');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
